@@ -34,12 +34,14 @@ class PowerCzOverlayGui {
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
         this.lblKills := this.textGui.Add("Text", "x170 y13", "KILLS")
         this.textGui.SetFont("s14 w700 Q5 cWhite", "Segoe UI")
-        this.valKills := this.textGui.Add("Text", "x+10 y8", "0")
+        this.valKills := this.textGui.Add("Text", "x+10 y8", "999")
+        this.valKills.Value := "0"
 
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
         this.lblMerits := this.textGui.Add("Text", "x250 y13", "MERITS")
         this.textGui.SetFont("s14 w700 Q5 cWhite", "Segoe UI")
-        this.valMerits := this.textGui.Add("Text", "x+10 y8", "0")
+        this.valMerits := this.textGui.Add("Text", "x+10 y8", "99999")
+        this.valMerits.Value := "0"
 
         this.Hide()
     }
@@ -52,10 +54,12 @@ class PowerCzOverlayGui {
             else
                 this.ShowCounterOnly()
         }
-        else if (state.startTimeMarker != "") {
+        ; 2. Power CZ 외부이지만, 타이머가 '실행 중(isRunning)'인 경우에만 유지
+        else if (state.isRunning) {
             this.Show()
             this.ShowCounterOnly()
         }
+        ; 3. 그 외 (Power CZ 외부 + 타이머 정지/리셋 상태) -> 숨김
         else {
             this.Hide()
         }

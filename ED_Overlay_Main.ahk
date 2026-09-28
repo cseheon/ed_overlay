@@ -71,6 +71,7 @@ OnUiTimer() {
         AppState.elapsedSeconds++
     }
     StatusOverlayGui.Update(AppState)
+    PowerCzOverlayGui.UpdateDisplay(AppState)
     PowerCzOverlayGui.UpdateMetrics(AppState)
     NavRouteOverlayGui.Update(AppState)
 }
@@ -128,14 +129,11 @@ OnBlinkTimer() {
 
     AppState.ResetCZMetrics()
     SoundBeep(500, 200)
+    
     PowerCzOverlayGui.UpdateDisplay(AppState)
 }
 
 F7::
 {
-    Voice.Speak("Shields offline!")
-
-    AppState.isShieldWarningActive := true
-    AppState.shieldWarningTicks := 20 ; 0.5초 간격 x 20회 = 10초간 지속
-    ShieldWarningGui.Show()
+    ; TEST
 }

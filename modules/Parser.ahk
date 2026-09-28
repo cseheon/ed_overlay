@@ -9,6 +9,7 @@ class JournalParser {
         "Undocked", ObjBindMethod(JournalParser, "OnUndocked"),
         "SupercruiseDestinationDrop", ObjBindMethod(JournalParser, "OnSupercruiseDestinationDrop"),
         "SupercruiseExit", ObjBindMethod(JournalParser, "OnSupercruiseExit"),
+        "Powerplay", ObjBindMethod(JournalParser, "OnPowerplayEvent"),
         "PowerplayMerits", ObjBindMethod(JournalParser, "OnPowerplayMerits"),
         "FactionKillBond", ObjBindMethod(JournalParser, "OnFactionKillBond"),
         "ShipTargeted", ObjBindMethod(JournalParser, "OnShipTargeted"),
@@ -162,6 +163,12 @@ class JournalParser {
                     }
                 }
             }
+        }
+    }
+
+    static OnPowerplayEvent(line, state, logTimeNum) {
+        if RegExMatch(line, '"Merits":(\d+)', &totalMatch) {
+            state.currentTotalMerits := Integer(totalMatch[1])
         }
     }
 
