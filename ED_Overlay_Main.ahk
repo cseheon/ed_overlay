@@ -13,7 +13,6 @@ SetWorkingDir(A_ScriptDir)
 #Include "modules/Gui_NavRoute.ahk"
 #Include "modules/Parser.ahk"
 #Include "modules/JournalReader.ahk"
-#Include "modules/Voice.ahk"
 
 
 ; --- 설정 및 단일 상태 인스턴스 생성 ---
@@ -129,7 +128,7 @@ OnBlinkTimer() {
 
     AppState.ResetCZMetrics()
     SoundBeep(500, 200)
-    
+
     PowerCzOverlayGui.UpdateDisplay(AppState)
 }
 
