@@ -12,7 +12,6 @@
 
 * **Lightweight**: Minimal CPU footprint with zero impact on in-game performance.
 * **Clean HUD**: Click-through, transparent overlays designed to match the *Elite Dangerous* UI.
-* **Auto-Sizing Panels**: Dynamic background resizing based on text length using Windows GDI.
 
 ---
 
@@ -20,7 +19,6 @@
 
 * **`ED_Status.ahk`**: Tracks FSD jumps, route steps, and system arrivals with custom audio signals (`SoundBeep`).
 * **`ED_PowerCZ.ahk`**: Real-time Merit and CP estimations, kill counts, and Powerplay CZ progress.
-* **`Gui_Notification.ahk`**: Global auto-resizing toast notification system with auto-expiring timers.
 
 ---
 
