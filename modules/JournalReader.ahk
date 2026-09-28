@@ -11,7 +11,12 @@ class JournalParser {
         "SupercruiseExit", ObjBindMethod(JournalParser, "OnSupercruiseExit"),
         "Powerplay", ObjBindMethod(JournalParser, "OnPowerplayEvent"),
         "PowerplayMerits", ObjBindMethod(JournalParser, "OnPowerplayMerits"),
-        "FactionKillBond", ObjBindMethod(JournalParser, "OnFactionKillBond"),
+        "FactionKillBond", ObjBindMethod(JournalParser, "OnKillEvent"),
+        "Bounty", ObjBindMethod(JournalParser, "OnKillEvent"),
+        "Missions", ObjBindMethod(JournalParser, "OnMissions"),
+        "MissionAccepted", ObjBindMethod(JournalParser, "OnMissionAccepted"),
+        "MissionCompleted", ObjBindMethod(JournalParser, "OnMissionCompleted"),
+        "MissionAbandoned", ObjBindMethod(JournalParser, "OnMissionEnded"),
         "ShipTargeted", ObjBindMethod(JournalParser, "OnShipTargeted"),
         "SupercruiseEntry", ObjBindMethod(JournalParser, "OnLeaveCZ"),
         "Died", ObjBindMethod(JournalParser, "OnLeaveCZ"),
@@ -37,6 +42,125 @@ class JournalParser {
         if JournalParser.Handlers.Has(eventName) {
             JournalParser.Handlers[eventName](line, state, logTimeNum)
         }
+    }
+
+    ; --- 미션 관련 이벤트 파싱 ---
+
+    ; 최초 미션 목록 수집 (게임 접속 시)
+    static OnMissions(line, state, logTimeNum) {
+        ; Active 미션 정보를 파싱하여 킬 미션 스택 갱신
+        ; 저널의 Active 미션 배열 구조 파싱
+        state.missionStack.Clear()
+        
+        pos := 1
+        while (pos := RegExMatch(line, '\{"MissionID":(\d+),"Name":"([^"]+)".*?"Faction":"([^"]+)"', &m, pos)) {
+            missionID := m[1]
+            missionName := m[2]
+            faction := m[3]
+            pos += m.Len
+
+            ; 해적/전투 처치 미션인지 확인
+            if (InStr(missionName, "Kill") || InStr(missionName, "Massacre")) {
+                kills := 0
+                if RegExMatch(line, '"KillCount":(\d+)', &kMatch) {
+                    kills := Integer(kMatch[1])
+                }
+                JournalParser.AddMissionToStack(state, faction, missionID, kills)
+            }
+        }
+    }
+
+    ; 신규 미션 수락
+    static OnMissionAccepted(line, state, logTimeNum) {
+        name := ExtractJsonVal(line, "Name")
+        if (InStr(name, "Kill") || InStr(name, "Massacre") || InStr(line, "KillCount")) {
+            faction := ExtractJsonVal(line, "Faction")
+            missionID := ExtractJsonVal(line, "MissionID")
+            
+            kills := 0
+            if RegExMatch(line, '"KillCount":(\d+)', &kMatch)
+                kills := Integer(kMatch[1])
+
+            if (faction != "" && missionID != "") {
+                JournalParser.AddMissionToStack(state, faction, missionID, kills)
+            }
+        }
+    }
+
+    ; 미션 완료 및 포기 처리
+    static OnMissionCompleted(line, state, logTimeNum) {
+        JournalParser.OnMissionEnded(line, state, logTimeNum)
+    }
+
+    static OnMissionEnded(line, state, logTimeNum) {
+        missionID := ExtractJsonVal(line, "MissionID")
+        if (missionID == "")
+            return
+
+        for faction, data in state.missionStack {
+            if data.missions.Has(missionID) {
+                data.missions.Delete(missionID)
+                JournalParser.RecalculateFactionStack(state, faction)
+                break
+            }
+        }
+    }
+
+    ; 적 처치 발생 시 스택 차감 (Bounty 및 FactionKillBond 공유)
+    static OnKillEvent(line, state, logTimeNum) {
+        ; 기존 FactionKillBond 처리 로직 수행
+        if InStr(line, "FactionKillBond") {
+            if (state.currentState != "PowerCZ") {
+                state.currentState := "PowerCZ"
+                SoundBeep(1200, 150)
+            }
+            if (state.enemyFaction == "") {
+                victim := ExtractJsonVal(line, "VictimFaction")
+                if (victim != "")
+                    state.enemyFaction := victim
+            }
+            if (state.startTimeMarker != "") {
+                startNum := ParseJournalTimestamp(state.startTimeMarker)
+                if (logTimeNum >= startNum)
+                    state.totalKills++
+            }
+        }
+
+        ; 미션 스택 처치 수 차감 (각 팩션별로 진행 중인 미션 중 하나에서 1씩 차감)
+        for faction, data in state.missionStack {
+            if (data.killsLeft > 0) {
+                for mID, kLeft in data.missions {
+                    if (kLeft > 0) {
+                        data.missions[mID] := kLeft - 1
+                        JournalParser.RecalculateFactionStack(state, faction)
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    ; 헬퍼 함수: 미션 추가 및 재계산
+    static AddMissionToStack(state, faction, missionID, kills) {
+        if (!state.missionStack.Has(faction)) {
+            state.missionStack[faction] := { killsLeft: 0, missions: Map() }
+        }
+        state.missionStack[faction].missions[missionID] := kills
+        JournalParser.RecalculateFactionStack(state, faction)
+    }
+
+    static RecalculateFactionStack(state, faction) {
+        if (!state.missionStack.Has(faction))
+            return
+
+        data := state.missionStack[faction]
+        maxKills := 0
+        ; 미션 스택 정렬 방식: 팩션 내 가장 많이 남은 미션 수량을 해당 팩션의 남아있는 처치 수로 반영
+        for mID, kLeft in data.missions {
+            if (kLeft > maxKills)
+                maxKills := kLeft
+        }
+        data.killsLeft := maxKills
     }
 
     ; --- 추가: 방어막 상태 변경 핸들러 ---

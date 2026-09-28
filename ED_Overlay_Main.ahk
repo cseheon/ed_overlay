@@ -10,6 +10,7 @@ SetWorkingDir(A_ScriptDir)
 #Include "modules/Gui_PowerCZ.ahk"
 #Include "modules/Gui_ShieldWarning.ahk"
 #Include "modules/Gui_NavRoute.ahk"
+#Include "modules/Gui_MissionStack.ahk"
 #Include "modules/JournalReader.ahk"
 
 
@@ -52,6 +53,9 @@ posNavX := (A_ScreenWidth - guiNavW) / 2
 posNavY := 20 ; 화면 맨 상단 약간 아래
 NavRouteOverlayGui.Init(posNavX, posNavY, guiNavW, guiNavH)
 
+; 미션 스택 GUI 초기화 (우측 중앙 자동 배치) ---
+MissionStackOverlayGui.Init()
+
 ; --- 첫 렌더링 및 저널 스캔 ---
 StatusOverlayGui.Update(AppState)
 JournalReader.FindLatestLogFile(LogDir, AppState)
@@ -75,6 +79,8 @@ OnUiTimer() {
     
     ; 2. CZ 표시 상태에 따라 Y 위치를 계산하여 점프 경로 오버레이 업데이트
     NavRouteOverlayGui.Update(AppState)
+
+    MissionStackOverlayGui.Update(AppState)
 }
 
 ; 0.5초 주기의 방어막 경고 루프
@@ -139,4 +145,25 @@ OnBlinkTimer() {
 F7::
 {
     ; TEST
+
+    /*
+    ; 1. 테스트 데이터 토글 (이미 활성화되어 있으면 초기화 후 숨김)
+    if (AppState.missionStack.Count > 0) {
+        AppState.missionStack.Clear()
+        MissionStackOverlayGui.Update(AppState)
+        ShowNotice("Mission Stack Test Cleared", 1500)
+        return
+    }
+
+    ; 2. 더미 팩션 데이터 및 미션 수량 입력
+    ; (노란색: 최대 잔여, 흰색: 진행 중, 회색: 완료/0)
+    AppState.missionStack["Alpha Fornaces Co."] := { killsLeft: 12, missions: Map(101, 12) }
+    AppState.missionStack["Jet Force Inc."] := { killsLeft: 8, missions: Map(102, 8) }
+    AppState.missionStack["Defense Party of LHS 317"] := { killsLeft: 3, missions: Map(103, 3) }
+    AppState.missionStack["Purple Mob Co."] := { killsLeft: 0, missions: Map(104, 0) }
+
+    ; 3. GUI 즉시 갱신
+    MissionStackOverlayGui.Update(AppState)
+    ShowNotice("Mission Stack Test Loaded!", 2000)
+    */
 }

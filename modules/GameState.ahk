@@ -27,6 +27,11 @@ class GameState {
     initialTotalMerits := 0
     currentTotalMerits := 0
 
+    ; --- Mission Stack 상태 추가 ---
+    isMissionStackActive := true
+    ; Structure: missionStack["FactionName"] := { killsLeft: 12, missions: Map(missionID, kills) }
+    missionStack := Map()
+
     ; --- Dirty Flag (이전 프레임 비교용) ---
     lastState := ""
     lastSystem := ""
@@ -45,6 +50,11 @@ class GameState {
     remainingJumps := 0
     currentFuelPct := 100.0
     isRouteActive := false
+
+    ; --- Misstion Stack
+    isStackOverlayVisible := true
+    totalActiveMissions := 0
+    missionStackData := [] ; [{ factionName: "", killsLeft: 0 }, ...]
 
     ; CZ 미터기 측정 리셋
     ResetCZMetrics() {
