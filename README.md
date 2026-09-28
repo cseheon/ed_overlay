@@ -1,2 +1,2 @@
 # ed_overlay
-Elite Dangerous Simple Overlay
+Elite Dangerous Simplly Overlay using AutoHotkey v2
