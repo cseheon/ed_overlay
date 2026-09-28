@@ -18,6 +18,7 @@ class GameState {
     shieldWarningTicks := 0
 
     ; --- Power CZ 미터기 상태 ---
+    isCzOverlayVisible := false
     isRunning := false
     startTimeMarker := ""
     elapsedSeconds := 0

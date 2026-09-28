@@ -3,9 +3,9 @@
 SetWorkingDir(A_ScriptDir)
 
 ; --- 모듈 로드 ---
-#Include "utils/Helper.ahk"
+#Include "modules/Helper.ahk"
 #Include "modules/Gui_Notification.ahk"
-#Include "models/GameState.ahk"
+#Include "modules/GameState.ahk"
 #Include "modules/Gui_Status.ahk"
 #Include "modules/Gui_PowerCZ.ahk"
 #Include "modules/Gui_ShieldWarning.ahk"
@@ -68,8 +68,12 @@ OnUiTimer() {
         AppState.elapsedSeconds++
     }
     StatusOverlayGui.Update(AppState)
+    
+    ; 1. CZ 오버레이 상태 판단 및 표시 여부(isCzOverlayVisible) 먼저 업데이트
     PowerCzOverlayGui.UpdateDisplay(AppState)
     PowerCzOverlayGui.UpdateMetrics(AppState)
+    
+    ; 2. CZ 표시 상태에 따라 Y 위치를 계산하여 점프 경로 오버레이 업데이트
     NavRouteOverlayGui.Update(AppState)
 }
 
@@ -127,7 +131,9 @@ OnBlinkTimer() {
     AppState.ResetCZMetrics()
     SoundBeep(500, 200)
 
+    ; CZ 오버레이 숨김 처리 후 점프 경로 위치 갱신
     PowerCzOverlayGui.UpdateDisplay(AppState)
+    NavRouteOverlayGui.Update(AppState)
 }
 
 F7::

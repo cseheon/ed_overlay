@@ -6,10 +6,10 @@ class NavRouteOverlayGui {
     static lblTarget := unset
     static lblSteps := unset
     static lblFuel := unset
-    static posX := 0, posY := 0, guiW := 0, guiH := 0
+    static posX := 0, posY := 0, basePosY := 20, guiW := 0, guiH := 0
 
     static Init(px, py, w, h, radius := 12) {
-        this.posX := px, this.posY := py, this.guiW := w, this.guiH := h
+        this.posX := px, this.posY := py, this.basePosY := py, this.guiW := w, this.guiH := h
 
         ; 1. 배경 GUI (반투명 검은색 + 둥근 모서리)
         this.bgGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20", "ED_Nav_BG")
@@ -31,7 +31,7 @@ class NavRouteOverlayGui {
         this.lblTarget := this.textGui.Add("Text", "x+8 y8 w150", "NONE")
 
         this.textGui.SetFont("s14 bold Q5 cffffff", "Consolas")
-        this.lblSteps := this.textGui.Add("Text", "x+2 y11 w260 Center", "⚪ ⚪ ⚪ ⚪ ⚪ (0/0)")
+        this.lblSteps := this.textGui.Add("Text", "x+2 y8 w260 Center", "⚪ ⚪ ⚪ ⚪ ⚪ (0/0)")
 
         this.textGui.SetFont("s10 bold Q5 c00ffff", "Consolas")
         this.textGui.Add("Text", "x530 y10", "FUEL")
@@ -45,6 +45,14 @@ class NavRouteOverlayGui {
         if (!state.isRouteActive || state.remainingJumps <= 0) {
             this.Hide()
             return
+        }
+
+        ; Power CZ 미터기가 화면에 표출 중이면 CZ 오버레이 아래(20 + 40 + 8 = 68)로 Y 좌표 변경
+        targetY := state.isCzOverlayVisible ? (this.basePosY + 48) : this.basePosY
+
+        ; 위치에 변경이 생긴 경우 GUI 이동 처리
+        if (this.posY != targetY) {
+            this.posY := targetY
         }
 
         this.Show()

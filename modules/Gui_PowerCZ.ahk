@@ -48,7 +48,7 @@ class PowerCzOverlayGui {
 
     static UpdateDisplay(state) {
         if (state.currentState == "PowerCZ") {
-            this.Show()
+            this.Show(state)
             if (state.startTimeMarker == "")
                 this.ShowTitleOnly()
             else
@@ -56,21 +56,27 @@ class PowerCzOverlayGui {
         }
         ; 2. Power CZ 외부이지만, 타이머가 '실행 중(isRunning)'인 경우에만 유지
         else if (state.isRunning) {
-            this.Show()
+            this.Show(state)
             this.ShowCounterOnly()
         }
         ; 3. 그 외 (Power CZ 외부 + 타이머 정지/리셋 상태) -> 숨김
         else {
-            this.Hide()
+            this.Hide(state)
         }
     }
 
-    static Show() {
+    static Show(state := "") {
+        if (IsObject(state))
+            state.isCzOverlayVisible := true
+
         this.bgGui.Show("x" . this.posX . " y" . this.posY . " w" . this.guiW . " h" . this.guiH . " NoActivate")
         this.textGui.Show("x" . this.posX . " y" . this.posY . " w" . this.guiW . " h" . this.guiH . " NoActivate")
     }
 
-    static Hide() {
+    static Hide(state := "") {
+        if (IsObject(state))
+            state.isCzOverlayVisible := false
+
         this.bgGui.Hide()
         this.textGui.Hide()
     }
