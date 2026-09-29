@@ -38,7 +38,8 @@ class StatusOverlayGui {
         this.bgGui.BackColor := "000000"
         WinSetTransparent(140, this.bgGui)
 
-        this.textGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20 +0x02000000", "ED_Status_Text")
+        ; this.textGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20 +0x02000000", "ED_Status_Text")
+        this.textGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20", "ED_Status_Text")
         this.textGui.BackColor := "000001"
         WinSetTransColor("000001 255", this.textGui)
 
@@ -48,38 +49,37 @@ class StatusOverlayGui {
         this.textGui.SetFont("s11 w700 Q5 cWhite", "Segoe UI")
         this.valSystem := this.textGui.Add("Text", "x+10 y8", "Unknown")
 
-        ; --- 파워세력 정보
+        ; --- 시스템 파워세력 정보
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
         this.lblPower := this.textGui.Add("Text", "x+25 y11", "POWER")
         this.textGui.SetFont("s11 w700 Q5 cWhite", "Segoe UI")
         this.valPower := this.textGui.Add("Text", "x+10 y8", "Unknown")
 
-        ; --- 파워 상태 정보
+        ; --- 시스템 파워 상태 정보
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
         this.lblPowerState := this.textGui.Add("Text", "x+25 y11", "STATE")
         this.textGui.SetFont("s11 w700 Q5 cWhite", "Segoe UI")
         this.valPowerState := this.textGui.Add("Text", "x+10 y8", "Unknown")
 
-        ; --- 스테이션 정보
+        ; --- 도킹 스테이션 정보
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
         this.lblStation := this.textGui.Add("Text", "x+25 y11", "DOCKED")
         this.textGui.SetFont("s11 w700 Q5 cWhite", "Segoe UI")
         this.valStation := this.textGui.Add("Text", "x+10 y8", "Unknown")
 
-        ; --- Merit 정보
+        ; --- 보유 Merit 정보
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
         this.lblTotalMerits := this.textGui.Add("Text", "x+25 y11", "MERITS")
         this.textGui.SetFont("s11 w700 Q5 cWhite", "Segoe UI")
         this.valTotalMerits := this.textGui.Add("Text", "x+10 y8", "0")
 
-        ; --- Credit 정보
+        ; --- 보유 Credit 정보
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
         this.lblCredits := this.textGui.Add("Text", "x+25 y11", "CREDITS")
         this.textGui.SetFont("s11 w700 Q5 cWhite", "Segoe UI")
         this.valCredits := this.textGui.Add("Text", "x+10 y8", "0")
 
-        ; this.Hide()
-        SetTimer(() => this.Show(), -1100)
+        SetTimer(() => this.Show(), -1000)
     }
 
     static Update(state) {
@@ -97,21 +97,21 @@ class StatusOverlayGui {
             isChanged := true
         }
 
-        if (state.stationName != this._lastStation) {
-            SetTextAndResize(this.valStation, state.stationName != "" ? state.stationName : "Unknown")
-            this._lastStation := state.stationName
+        if (state.dockedStationName != this._lastStation) {
+            SetTextAndResize(this.valStation, state.dockedStationName != "" ? state.dockedStationName : "Unknown")
+            this._lastStation := state.dockedStationName
             isChanged := true
         }
 
-        if (state.powerName != this._lastPower) {
-            SetTextAndResize(this.valPower, state.powerName != "" ? state.powerName : "None")
-            this._lastPower := state.powerName
+        if (state.systemPower != this._lastPower) {
+            SetTextAndResize(this.valPower, state.systemPower != "" ? state.systemPower : "None")
+            this._lastPower := state.systemPower
             isChanged := true
         }
 
-        if (state.powerState != this._lastPowerState) {
-            SetTextAndResize(this.valPowerState, state.powerState != "" ? state.powerState : "Unoccupied")
-            this._lastPowerState := state.powerState
+        if (state.systemPowerState != this._lastPowerState) {
+            SetTextAndResize(this.valPowerState, state.systemPowerState != "" ? state.systemPowerState : "Unoccupied")
+            this._lastPowerState := state.systemPowerState
             isChanged := true
         }
 

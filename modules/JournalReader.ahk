@@ -194,10 +194,30 @@ class JournalParser {
     ; FSD 점프 시 남은 점프 수 차감 및 도착 시 GUI 숨김 처리
     static OnLocationEvent(line, state, logTimeNum) {
         state.starSystem := ExtractJsonVal(line, "StarSystem")
-        state.powerName := ExtractJsonVal(line, "Powers")
-        state.powerState := ExtractJsonVal(line, "PowerplayState")
-        state.stationName := "Unknown"
-        state.powerBodyName := "Unknown"
+        state.systemPower := ExtractJsonVal(line, "Powers")
+        state.systemPowerState := ExtractJsonVal(line, "PowerplayState")
+        state.systemAllegiance := ExtractJsonVal(line, "SystemAllegiance")
+        state.systemGovernment := ExtractJournalEnumVal(line, "SystemGovernment")
+        state.systemSecurity := ExtractJournalEnumVal(line, "SystemSecurity")
+        state.systemEconomy := ExtractJournalEnumVal(line, "SystemEconomy")
+
+        ; SystemFaction 객체에서 이름과 상태 파싱
+        state.systemFactionName := ""
+        state.systemFactionState := ""
+        if RegExMatch(line, '"SystemFaction":\{([^}]*)\}', &factionMatch) {
+            factionName := ExtractJsonVal(factionMatch[1], "Name")
+            factionState := ExtractJsonVal(factionMatch[1], "FactionState")
+
+            if (factionName != "")
+                state.systemFactionName := factionName
+            state.systemFactionState := factionState
+        }
+
+        if RegExMatch(line, '"Population":(\d+)', &populationMatch)
+            state.systemPopulation := Integer(populationMatch[1])
+
+        state.dockedStationName := ""
+        state.powerBodyName := ""
 
         if (state.currentState != "PowerCZ")
             state.currentState := "System"
@@ -239,11 +259,12 @@ class JournalParser {
     }
 
     static OnDocked(line, state, logTimeNum) {
-        state.stationName := ExtractJsonVal(line, "StationName")
+        state.dockedStationName := ExtractJsonVal(line, "StationName")
         state.currentState := "Docked"
     }
 
     static OnUndocked(line, state, logTimeNum) {
+        state.dockedStationName := ""
         state.currentState := "System"
     }
 
@@ -323,7 +344,7 @@ class JournalParser {
     static OnShipTargeted(line, state, logTimeNum) {
         if (state.currentState == "PowerCZ" && state.enemyFaction == "") {
             targetFaction := ExtractJsonVal(line, "Faction")
-            if (targetFaction != "" && targetFaction != state.powerName)
+            if (targetFaction != "" && targetFaction != state.systemPower)
                 state.enemyFaction := targetFaction
         }
     }

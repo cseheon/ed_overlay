@@ -39,6 +39,16 @@ ExtractJsonVal(json, key) {
     return ""
 }
 
+ExtractJournalEnumVal(json, key) {
+    value := ExtractJsonVal(json, key)
+    if (value == "")
+        return ""
+
+    value := RegExReplace(value, "^\$")
+    value := RegExReplace(value, ";$")
+    return RegExReplace(value, "^.*_")
+}
+
 ParseJournalTimestamp(isoStr) {
     cleanStr := RegExReplace(isoStr, "\D", "")
     return cleanStr != "" ? Number(cleanStr) : 0
