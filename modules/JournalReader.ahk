@@ -51,7 +51,7 @@ class JournalParser {
         ; Active 미션 정보를 파싱하여 킬 미션 스택 갱신
         ; 저널의 Active 미션 배열 구조 파싱
         state.missionStack.Clear()
-        
+
         pos := 1
         while (pos := RegExMatch(line, '\{"MissionID":(\d+),"Name":"([^"]+)".*?"Faction":"([^"]+)"', &m, pos)) {
             missionID := m[1]
@@ -76,7 +76,7 @@ class JournalParser {
         if (InStr(name, "Kill") || InStr(name, "Massacre") || InStr(line, "KillCount")) {
             faction := ExtractJsonVal(line, "Faction")
             missionID := ExtractJsonVal(line, "MissionID")
-            
+
             kills := 0
             if RegExMatch(line, '"KillCount":(\d+)', &kMatch)
                 kills := Integer(kMatch[1])
@@ -112,7 +112,6 @@ class JournalParser {
         if InStr(line, "FactionKillBond") {
             if (state.currentState != "PowerCZ") {
                 state.currentState := "PowerCZ"
-                SoundBeep(1200, 150)
             }
             if (state.enemyFaction == "") {
                 victim := ExtractJsonVal(line, "VictimFaction")
@@ -172,10 +171,7 @@ class JournalParser {
             ; On -> Off 로 전환된 순간에만 경고 작동
             if (state.isShieldUp && !isUp) {
                 state.isShieldWarningActive := true
-                state.shieldWarningTicks := 20 ; 0.5초 간격 x 20회 = 10초간 지속
                 ShieldWarningGui.Show()
-
-                Voice.Speak("Shields offline!", 2)
             }
 
             state.isShieldUp := isUp
@@ -245,7 +241,6 @@ class JournalParser {
         if InStr(typeStr, "Warzone") || InStr(typeStr, "Powerplay") || InStr(line, "Power Conflict Zone") {
             state.currentState := "PowerCZ"
             state.enemyFaction := ""
-            SoundBeep(1200, 150)
         }
     }
 
@@ -259,7 +254,6 @@ class JournalParser {
             if (state.currentState != "PowerCZ") {
                 state.currentState := "PowerCZ"
                 state.enemyFaction := ""
-                SoundBeep(1200, 150)
             }
         }
     }
@@ -270,7 +264,6 @@ class JournalParser {
         }
         if (state.currentState != "PowerCZ") {
             state.currentState := "PowerCZ"
-            SoundBeep(1200, 150)
         }
 
         ; 세션 카운터 반영
@@ -299,7 +292,6 @@ class JournalParser {
     static OnFactionKillBond(line, state, logTimeNum) {
         if (state.currentState != "PowerCZ") {
             state.currentState := "PowerCZ"
-            SoundBeep(1200, 150)
         }
 
         if (state.enemyFaction == "") {
@@ -330,12 +322,9 @@ class JournalParser {
             state.currentState := "System"
             state.enemyFaction := ""
             state.czBodyName := "Unknown"
-            SoundBeep(800, 150)
         }
     }
 }
-
-
 
 
 class JournalReader {
@@ -394,7 +383,7 @@ class JournalReader {
 
         try {
             jsonText := FileRead(navFilePath, "UTF-8")
-            
+
             ; Route 배열 존재 여부 및 성계 탐색
             if InStr(jsonText, '"Route"') {
                 matches := []

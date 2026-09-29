@@ -15,7 +15,6 @@ class GameState {
     ; --- 방어막(Shield) 상태 및 경고 타이머 ---
     isShieldUp := true
     isShieldWarningActive := false
-    shieldWarningTicks := 0
 
     ; --- Power CZ 미터기 상태 ---
     isCzOverlayVisible := false

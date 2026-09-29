@@ -117,8 +117,5 @@ class NavRouteOverlayGui {
     static RouteArrived() {
         str := Format("[ " . this.lblTarget.Value . " ] Arrived !!")
         ShowNotice(str)
-        SoundBeep(880, 100)
-        Sleep(50)
-        SoundBeep(1320, 180)
     }
 }

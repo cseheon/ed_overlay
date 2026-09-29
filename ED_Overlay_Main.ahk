@@ -39,12 +39,8 @@ pos2X := (A_ScreenWidth - gui2W) / 2
 pos2Y := Integer(IniRead(iniPath, "GuiPowerCZ", "Y", "20"))
 PowerCzOverlayGui.Init(pos2X, pos2Y, gui2W, gui2H)
 
-; 경고 패널 위치 (화면 상단 중앙, 얇고 넓게)
-guiWarnW := Integer(IniRead(iniPath, "GuiShieldWarning", "Width", "400"))
-guiWarnH := Integer(IniRead(iniPath, "GuiShieldWarning", "Height", "32"))
-posWarnX := (A_ScreenWidth - guiWarnW) / 2
-posWarnY := (A_ScreenWidth / 7) ; Integer(IniRead(iniPath, "GuiShieldWarning", "Y", A_ScreenWidth / 7))
-ShieldWarningGui.Init(posWarnX, posWarnY, guiWarnW, guiWarnH)
+; 방어막 경고 패널 초기화
+ShieldWarningGui.Init(iniPath)
 
 ; 점프 경로 GUI 위치 및 너비 설정 (상단 중앙) ---
 guiNavW := 620
@@ -65,7 +61,6 @@ Voice.Init()
 ; --- 타이머 등록 ---
 SetTimer(() => JournalReader.ReadTask(LogDir, AppState), readInterval)
 SetTimer(OnUiTimer, uiInterval)
-SetTimer(OnBlinkTimer, 500)
 
 OnUiTimer() {
     if (AppState.isRunning) {
@@ -83,25 +78,6 @@ OnUiTimer() {
     MissionStackOverlayGui.Update(AppState)
 }
 
-; 0.5초 주기의 방어막 경고 루프
-OnBlinkTimer() {
-    if (AppState.isShieldWarningActive) {
-        ShieldWarningGui.ToggleBlink()
-
-        ; 1초마다 Beep 음 출력 (2회 깜빡일 때마다 1번)
-        if (AppState.shieldWarningTicks < 18 && Mod(AppState.shieldWarningTicks, 4) == 0) {
-            Voice.Speak("Warning", 2)
-        }
-
-        AppState.shieldWarningTicks--
-
-        ; 10초 (20 틱) 경과 시 종료
-        if (AppState.shieldWarningTicks <= 0) {
-            AppState.isShieldWarningActive := false
-            ShieldWarningGui.Hide()
-        }
-    }
-}
 
 ; ==============================================================================
 ; 단축키 바인딩
@@ -135,7 +111,7 @@ OnBlinkTimer() {
         Logger.SaveLogToJSON(AppState)
 
     AppState.ResetCZMetrics()
-    SoundBeep(500, 200)
+    SoundBeep(500, 1000)
 
     ; CZ 오버레이 숨김 처리 후 점프 경로 위치 갱신
     PowerCzOverlayGui.UpdateDisplay(AppState)
@@ -145,6 +121,8 @@ OnBlinkTimer() {
 F7::
 {
     ; TEST
+    AppState.isShieldWarningActive := true
+    ShieldWarningGui.Show()
 
     /*
     ; 1. 테스트 데이터 토글 (이미 활성화되어 있으면 초기화 후 숨김)
@@ -166,4 +144,10 @@ F7::
     MissionStackOverlayGui.Update(AppState)
     ShowNotice("Mission Stack Test Loaded!", 2000)
     */
+}
+
+F8::
+{
+    ; TEST
+    ShieldWarningGui.Hide()
 }
