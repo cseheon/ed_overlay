@@ -3,6 +3,10 @@
 class JournalParser {
     ; ObjBindMethod를 활용해 메서드의 호출 대상(JournalParser)을 미리 바인딩
     static Handlers := Map(
+        ; 크레딧 파싱 관련 이벤트
+        "LoadGame", ObjBindMethod(JournalParser, "OnCreditEvent"),
+
+        ; 위치 및 상태 이벤트
         "FSDJump", ObjBindMethod(JournalParser, "OnLocationEvent"),
         "Location", ObjBindMethod(JournalParser, "OnLocationEvent"),
         "Docked", ObjBindMethod(JournalParser, "OnDocked"),
@@ -23,8 +27,7 @@ class JournalParser {
         "ShieldState", ObjBindMethod(JournalParser, "OnShieldState"),
         "NavRoute", ObjBindMethod(JournalParser, "OnNavRouteUpdate"),
         "NavRouteClear", ObjBindMethod(JournalParser, "OnNavRouteClear"),
-        "ReservoirComp", ObjBindMethod(JournalParser, "OnFuelUpdate")
-    )
+        "ReservoirComp", ObjBindMethod(JournalParser, "OnFuelUpdate")    )
 
     static Parse(line, state) {
         ; 1. event 명 추출
@@ -41,6 +44,14 @@ class JournalParser {
         ; 3. 바인딩된 핸들러 실행 (정확히 3개의 인자 전달)
         if JournalParser.Handlers.Has(eventName) {
             JournalParser.Handlers[eventName](line, state, logTimeNum)
+        }
+    }
+
+    ; --- 보유 크레딧(Credits) 파싱 핸들러 ---
+    static OnCreditEvent(line, state, logTimeNum) {
+        ; 저널 라인 내에 "Credits": 수치가 포함되어 있는 경우 state.credits 갱신
+        if RegExMatch(line, '"Credits":(\d+)', &creditMatch) {
+            state.totalCredits := Integer(creditMatch[1])
         }
     }
 
@@ -121,7 +132,7 @@ class JournalParser {
             if (state.startTimeMarker != "") {
                 startNum := ParseJournalTimestamp(state.startTimeMarker)
                 if (logTimeNum >= startNum)
-                    state.totalKills++
+                    state.powerKills++
             }
         }
 
@@ -186,7 +197,7 @@ class JournalParser {
         state.powerName := ExtractJsonVal(line, "Powers")
         state.powerState := ExtractJsonVal(line, "PowerplayState")
         state.stationName := "Unknown"
-        state.czBodyName := "Unknown"
+        state.powerBodyName := "Unknown"
 
         if (state.currentState != "PowerCZ")
             state.currentState := "System"
@@ -247,7 +258,7 @@ class JournalParser {
     static OnSupercruiseExit(line, state, logTimeNum) {
         body := ExtractJsonVal(line, "Body")
         if (body != "") {
-            state.czBodyName := body
+            state.powerBodyName := body
         }
 
         if (InStr(body, "Conflict") || InStr(line, "ConflictZone") || InStr(line, "Powerplay")) {
@@ -260,7 +271,7 @@ class JournalParser {
 
     static OnPowerplayMerits(line, state, logTimeNum) {
         if RegExMatch(line, '"TotalMerits":(\d+)', &totalMatch) {
-            state.currentTotalMerits := Integer(totalMatch[1])
+            state.totalMerits := Integer(totalMatch[1])
         }
         if (state.currentState != "PowerCZ") {
             state.currentState := "PowerCZ"
@@ -271,12 +282,12 @@ class JournalParser {
             startNum := ParseJournalTimestamp(state.startTimeMarker)
             if (logTimeNum >= startNum) {
                 if RegExMatch(line, '"MeritsGained":(\d+)', &meritMatch) {
-                    state.totalMerits += Integer(meritMatch[1])
+                    state.powerMerits += Integer(meritMatch[1])
                 }
                 if RegExMatch(line, '"TotalMerits":(\d+)', &totalMatch) {
                     parsedTotal := Integer(totalMatch[1])
-                    if (state.initialTotalMerits == 0 && RegExMatch(line, '"MeritsGained":(\d+)', &gainedMatch)) {
-                        state.initialTotalMerits := parsedTotal - Integer(gainedMatch[1])
+                    if (state.powerInitTotalMerits == 0 && RegExMatch(line, '"MeritsGained":(\d+)', &gainedMatch)) {
+                        state.powerInitTotalMerits := parsedTotal - Integer(gainedMatch[1])
                     }
                 }
             }
@@ -285,7 +296,7 @@ class JournalParser {
 
     static OnPowerplayEvent(line, state, logTimeNum) {
         if RegExMatch(line, '"Merits":(\d+)', &totalMatch) {
-            state.currentTotalMerits := Integer(totalMatch[1])
+            state.totalMerits := Integer(totalMatch[1])
         }
     }
 
@@ -304,7 +315,7 @@ class JournalParser {
         if (state.startTimeMarker != "") {
             startNum := ParseJournalTimestamp(state.startTimeMarker)
             if (logTimeNum >= startNum) {
-                state.totalKills++
+                state.powerKills++
             }
         }
     }
@@ -321,7 +332,7 @@ class JournalParser {
         if (state.currentState == "PowerCZ") {
             state.currentState := "System"
             state.enemyFaction := ""
-            state.czBodyName := "Unknown"
+            state.powerBodyName := "Unknown"
         }
     }
 }

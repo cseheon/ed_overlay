@@ -6,6 +6,7 @@ SetWorkingDir(A_ScriptDir)
 #Include "modules/Helper.ahk"
 #Include "modules/Gui_Notification.ahk"
 #Include "modules/GameState.ahk"
+#Include "modules/StatusReader.ahk"
 #Include "modules/Gui_Status.ahk"
 #Include "modules/Gui_PowerCZ.ahk"
 #Include "modules/Gui_ShieldWarning.ahk"
@@ -27,10 +28,10 @@ readInterval := Integer(IniRead(iniPath, "Settings", "ReadIntervalMs", "200"))
 uiInterval := Integer(IniRead(iniPath, "Settings", "UiIntervalMs", "1000"))
 
 ; --- GUI 레이아웃 좌표 초기화 ---
-pos1X := Integer(IniRead(iniPath, "GuiStatus", "X", "20"))
+pos1X := 0      ; Integer(IniRead(iniPath, "GuiStatus", "X", "0"))
 pos1Y := Integer(IniRead(iniPath, "GuiStatus", "Y", "20"))
-gui1W := Integer(IniRead(iniPath, "GuiStatus", "Width", "800"))
-gui1H := Integer(IniRead(iniPath, "GuiStatus", "Height", "55"))
+gui1W := A_ScreenWidth      ; gui1W := Integer(IniRead(iniPath, "GuiStatus", "Width", "800"))
+gui1H := Integer(IniRead(iniPath, "GuiStatus", "Height", "40"))
 StatusOverlayGui.Init(pos1X, pos1Y, gui1W, gui1H)
 
 gui2W := Integer(IniRead(iniPath, "GuiPowerCZ", "Width", "400"))
@@ -43,10 +44,10 @@ PowerCzOverlayGui.Init(pos2X, pos2Y, gui2W, gui2H)
 ShieldWarningGui.Init(iniPath)
 
 ; 점프 경로 GUI 위치 및 너비 설정 (상단 중앙) ---
-guiNavW := 620
-guiNavH := 38
+guiNavW := Integer(IniRead(iniPath, "GuiNavRoute", "Width", "620"))
+guiNavH := Integer(IniRead(iniPath, "GuiNavRoute", "Height", "38"))
 posNavX := (A_ScreenWidth - guiNavW) / 2
-posNavY := 20 ; 화면 맨 상단 약간 아래
+posNavY := Integer(IniRead(iniPath, "GuiNavRoute", "Y", "20")) ; 화면 맨 상단 약간 아래
 NavRouteOverlayGui.Init(posNavX, posNavY, guiNavW, guiNavH)
 
 ; 미션 스택 GUI 초기화 (우측 중앙 자동 배치) ---
@@ -59,13 +60,19 @@ JournalReader.FindLatestLogFile(LogDir, AppState)
 Voice.Init()
 
 ; --- 타이머 등록 ---
-SetTimer(() => JournalReader.ReadTask(LogDir, AppState), readInterval)
+SetTimer(OnLogTimer, readInterval)
 SetTimer(OnUiTimer, uiInterval)
+
+OnLogTimer() {
+    JournalReader.ReadTask(LogDir, AppState)
+    StatusReader.ReadTask(LogDir, AppState)
+}
 
 OnUiTimer() {
     if (AppState.isRunning) {
         AppState.elapsedSeconds++
     }
+
     StatusOverlayGui.Update(AppState)
     
     ; 1. CZ 오버레이 상태 판단 및 표시 여부(isCzOverlayVisible) 먼저 업데이트
@@ -106,7 +113,7 @@ OnUiTimer() {
 {
     if (AppState.currentState != "PowerCZ" && AppState.startTimeMarker == "")
         return
-
+    
     if (AppState.totalMerits > 0)
         Logger.SaveLogToJSON(AppState)
 
@@ -121,8 +128,12 @@ OnUiTimer() {
 F7::
 {
     ; TEST
+    /*
     AppState.isShieldWarningActive := true
     ShieldWarningGui.Show()
+    */
+
+    StatusOverlayGui.Show()
 
     /*
     ; 1. 테스트 데이터 토글 (이미 활성화되어 있으면 초기화 후 숨김)
@@ -149,5 +160,9 @@ F7::
 F8::
 {
     ; TEST
-    ShieldWarningGui.Hide()
+    ; ShieldWarningGui.Hide()
+
+    AppState.currentTotalMerits += 300
+
+    ; StatusOverlayGui.Hide()
 }

@@ -47,10 +47,10 @@ ParseJournalTimestamp(isoStr) {
 SetTextAndResize(textCtrl, text) {
     Critical
     size := GetTextSize(textCtrl, text)
-    ; textCtrl.Move(,, GetTextSize(textCtrl, text)*)
     textCtrl.Move(, , size*)
+    ; textCtrl.Move(, , GetTextSize(textCtrl, text)*)
     textCtrl.Value := text
-    WinRedraw(textCtrl.Gui.Hwnd)
+    ; WinRedraw(textCtrl.Gui.Hwnd)
     return size
 
     GetTextSize(textCtrl, text) {

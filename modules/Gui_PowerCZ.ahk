@@ -1,7 +1,7 @@
 ﻿#Requires AutoHotkey v2.0
 
 class PowerCzOverlayGui {
-    static bgGui := unset
+    ; static bgGui := unset
     static textGui := unset
     static textCzTitle := unset
     static lblTime := unset
@@ -12,12 +12,17 @@ class PowerCzOverlayGui {
     static valMerits := unset
     static posX := 0, posY := 0, guiW := 0, guiH := 0
 
+    static _lastKills := -1
+    static _lastMerits := -1
+
     static Init(px, py, w, h) {
         this.posX := px, this.posY := py, this.guiW := w, this.guiH := h
 
+        /*
         this.bgGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20", "ED_Cz_BG")
         this.bgGui.BackColor := "000000"
         WinSetTransparent(140, this.bgGui)
+        */
 
         this.textGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20 +0x02000000", "ED_Cz_Text")
         this.textGui.BackColor := "000001"
@@ -27,18 +32,18 @@ class PowerCzOverlayGui {
         this.textCzTitle := this.textGui.Add("Text", "x0 y10 w" . w . " h" . h . " c0xffffff Center", "Power Conflict Zone")
 
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
-        this.lblTime := this.textGui.Add("Text", "x70 y13", "TIME")
+        this.lblTime := this.textGui.Add("Text", "x70 y11", "TIME")
         this.textGui.SetFont("s14 w700 Q5 cWhite", "Segoe UI")
         this.valTime := this.textGui.Add("Text", "x+10 y8", "00:00")
 
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
-        this.lblKills := this.textGui.Add("Text", "x170 y13", "KILLS")
+        this.lblKills := this.textGui.Add("Text", "x170 y11", "KILLS")
         this.textGui.SetFont("s14 w700 Q5 cWhite", "Segoe UI")
         this.valKills := this.textGui.Add("Text", "x+10 y8", "999")
         this.valKills.Value := "0"
 
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
-        this.lblMerits := this.textGui.Add("Text", "x250 y13", "MERITS")
+        this.lblMerits := this.textGui.Add("Text", "x250 y11", "MERITS")
         this.textGui.SetFont("s14 w700 Q5 cWhite", "Segoe UI")
         this.valMerits := this.textGui.Add("Text", "x+10 y8", "99999")
         this.valMerits.Value := "0"
@@ -69,7 +74,7 @@ class PowerCzOverlayGui {
         if (IsObject(state))
             state.isCzOverlayVisible := true
 
-        this.bgGui.Show("x" . this.posX . " y" . this.posY . " w" . this.guiW . " h" . this.guiH . " NoActivate")
+        ; this.bgGui.Show("x" . this.posX . " y" . this.posY . " w" . this.guiW . " h" . this.guiH . " NoActivate")
         this.textGui.Show("x" . this.posX . " y" . this.posY . " w" . this.guiW . " h" . this.guiH . " NoActivate")
     }
 
@@ -77,7 +82,7 @@ class PowerCzOverlayGui {
         if (IsObject(state))
             state.isCzOverlayVisible := false
 
-        this.bgGui.Hide()
+        ; this.bgGui.Hide()
         this.textGui.Hide()
     }
 
@@ -106,14 +111,14 @@ class PowerCzOverlayGui {
         secs := Mod(state.elapsedSeconds, 60)
         this.valTime.Value := Format("{1:02d}:{2:02d}", mins, secs)
 
-        if (state.lastKills != state.totalKills) {
-            this.valKills.Value := Format("{1}", state.totalKills)
-            state.lastKills := state.totalKills
+        if (this._lastKills != state.powerKills) {
+            this.valKills.Value := Format("{1}", state.powerKills)
+            this._lastKills := state.powerKills
         }
 
-        if (state.lastMerits != state.totalMerits) {
-            this.valMerits.Value := Format("{1}", state.totalMerits)
-            state.lastMerits := state.totalMerits
+        if (this._lastMerits != state.powerMerits) {
+            this.valMerits.Value := Format("{1}", state.powerMerits)
+            this._lastMerits := state.powerMerits
         }
     }
 }
@@ -127,10 +132,10 @@ class Logger {
         mins := Floor(state.elapsedSeconds / 60)
         secs := Mod(state.elapsedSeconds, 60)
         elapsedStr := Format("{1:02d}:{2:02d}", mins, secs)
-        ppm := (state.elapsedSeconds > 0) ? Round((state.totalMerits / state.elapsedSeconds) * 60, 1) : 0.0
+        ppm := (state.elapsedSeconds > 0) ? Round((state.powerMerits / state.elapsedSeconds) * 60, 1) : 0.0
 
-        startTotal := (state.initialTotalMerits > 0) ? state.initialTotalMerits : state.currentTotalMerits
-        endTotal := state.currentTotalMerits
+        startTotal := (state.powerInitTotalMerits > 0) ? state.powerInitTotalMerits : state.totalMerits
+        endTotal := state.totalMerits
 
         jsonEntry := Format(
             '  {`n' .
@@ -142,7 +147,7 @@ class Logger {
             '    "session_merits": {6},`n' .
             '    "ppm": {7}`n' .
             '  }',
-            nowStr, startTotal, endTotal, elapsedStr, state.totalKills, state.totalMerits, ppm
+            nowStr, startTotal, endTotal, elapsedStr, state.powerKills, state.powerMerits, ppm
         )
 
         if (!FileExist(logFilePath)) {
