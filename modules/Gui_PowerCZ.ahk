@@ -12,10 +12,14 @@ class PowerCzOverlayGui {
     static valMerits := unset
     static posX := 0, posY := 0, guiW := 0, guiH := 0
 
+    static _visibleiState := ""      ; "" , "title", "counter"
+    static _isRunning := false
     static _lastKills := -1
     static _lastMerits := -1
+    static _lastTickCount := 0
 
     static Init(px, py, w, h) {
+        w := Max(w, 400)
         this.posX := px, this.posY := py, this.guiW := w, this.guiH := h
 
         /*
@@ -28,87 +32,118 @@ class PowerCzOverlayGui {
         this.textGui.BackColor := "000001"
         WinSetTransColor("000001 255", this.textGui)
 
-        this.textGui.SetFont("s14 bold Q5", "Consolas")
-        this.textCzTitle := this.textGui.Add("Text", "x0 y10 w" . w . " h" . h . " c0xffffff Center", "Power Conflict Zone")
+        ; this.textGui.SetFont("s10 w600 Q5", "Segoe UI")
+        this.textGui.SetFont("s12 w700 Q5 c00ffff", "Consolas")
+        this.textCzTitle := this.textGui.Add("Text", "x0 y10 w" . w . " h" . h . " Center", "POWER CONFLICT ZONE")
 
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
         this.lblTime := this.textGui.Add("Text", "x70 y11", "TIME")
         this.textGui.SetFont("s14 w700 Q5 cWhite", "Segoe UI")
-        this.valTime := this.textGui.Add("Text", "x+10 y8", "00:00")
+        this.valTime := this.textGui.Add("Text", "x+10 y6", "00:00")
 
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
         this.lblKills := this.textGui.Add("Text", "x170 y11", "KILLS")
         this.textGui.SetFont("s14 w700 Q5 cWhite", "Segoe UI")
-        this.valKills := this.textGui.Add("Text", "x+10 y8", "999")
+        this.valKills := this.textGui.Add("Text", "x+10 y6", "999")
         this.valKills.Value := "0"
 
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
         this.lblMerits := this.textGui.Add("Text", "x250 y11", "MERITS")
         this.textGui.SetFont("s14 w700 Q5 cWhite", "Segoe UI")
-        this.valMerits := this.textGui.Add("Text", "x+10 y8", "99999")
+        this.valMerits := this.textGui.Add("Text", "x+10 y6", "99999")
         this.valMerits.Value := "0"
 
         this.Hide()
     }
 
+    static Update(state) {
+        ; 1. Power CZ 에서 타이틀 상태일때, 함선무기를 전개하면 미터기를 시작
+        if (this._visibleiState == "title" && state.isHardpointsDeployed && this._isRunning == false) {
+            this.StartMeritsMeter(state)
+        }
+        ; 2. 미터기가 작동중일때, Power CZ 를 벗아나면 기록을 저장하고 종료
+        else if (this._visibleiState == "counter" && state.currentState != "PowerCZ" && state.powerStartTimeMarker != "") {
+            this.ResetMeritsMeter(state)
+        }
+
+        if (this._isRunning) {
+            if (this._lastTickCount == 0)
+                this._lastTickCount := A_TickCount
+
+            state.powerElapsedSeconds += (A_TickCount - this._lastTickCount) / 1000
+            this._lastTickCount := A_TickCount
+        }
+
+        this.UpdateDisplay(state)
+        this.UpdateMetrics(state)
+    }
+
     static UpdateDisplay(state) {
         if (state.currentState == "PowerCZ") {
-            this.Show(state)
-            if (state.startTimeMarker == "")
+            this.Show()
+            if (state.powerStartTimeMarker == "")
                 this.ShowTitleOnly()
             else
                 this.ShowCounterOnly()
         }
         ; 2. Power CZ 외부이지만, 타이머가 '실행 중(isRunning)'인 경우에만 유지
-        else if (state.isRunning) {
-            this.Show(state)
+        else if (this._isRunning) {
+            this.Show()
             this.ShowCounterOnly()
         }
         ; 3. 그 외 (Power CZ 외부 + 타이머 정지/리셋 상태) -> 숨김
         else {
-            this.Hide(state)
+            this.Hide()
         }
     }
 
-    static Show(state := "") {
-        if (IsObject(state))
-            state.isCzOverlayVisible := true
+    static Show() {
 
         ; this.bgGui.Show("x" . this.posX . " y" . this.posY . " w" . this.guiW . " h" . this.guiH . " NoActivate")
         this.textGui.Show("x" . this.posX . " y" . this.posY . " w" . this.guiW . " h" . this.guiH . " NoActivate")
     }
 
-    static Hide(state := "") {
-        if (IsObject(state))
-            state.isCzOverlayVisible := false
+    static Hide() {
 
-        ; this.bgGui.Hide()
-        this.textGui.Hide()
+        if (this._visibleiState != "") {
+            ; this.bgGui.Hide()
+            this.textGui.Hide()
+
+            this._visibleiState := ""
+        }
     }
 
     static ShowTitleOnly() {
-        this.textCzTitle.Visible := true
-        this.lblTime.Visible := false, this.valTime.Visible := false
-        this.lblKills.Visible := false, this.valKills.Visible := false
-        this.lblMerits.Visible := false, this.valMerits.Visible := false
-        WinRedraw(this.textGui.Hwnd)
+        if (this._visibleiState != "title") {
+            this.textCzTitle.Visible := true
+            this.lblTime.Visible := false, this.valTime.Visible := false
+            this.lblKills.Visible := false, this.valKills.Visible := false
+            this.lblMerits.Visible := false, this.valMerits.Visible := false
+            WinRedraw(this.textGui.Hwnd)
+
+            this._visibleiState := "title"
+        }
     }
 
     static ShowCounterOnly() {
-        this.textCzTitle.Visible := false
-        this.lblTime.Visible := true, this.valTime.Visible := true
-        this.lblKills.Visible := true, this.valKills.Visible := true
-        this.lblMerits.Visible := true, this.valMerits.Visible := true
-        WinRedraw(this.textGui.Hwnd)
+        if (this._visibleiState != "counter") {
+            this.textCzTitle.Visible := false
+            this.lblTime.Visible := true, this.valTime.Visible := true
+            this.lblKills.Visible := true, this.valKills.Visible := true
+            this.lblMerits.Visible := true, this.valMerits.Visible := true
+            WinRedraw(this.textGui.Hwnd)
+
+            this._visibleiState := "counter"
+        }
     }
 
     static UpdateMetrics(state) {
         Critical
-        if (state.startTimeMarker == "")
+        if (state.powerStartTimeMarker == "")
             return
 
-        mins := Floor(state.elapsedSeconds / 60)
-        secs := Mod(state.elapsedSeconds, 60)
+        mins := Floor(state.powerElapsedSeconds / 60)
+        secs := Mod(state.powerElapsedSeconds, 60)
         this.valTime.Value := Format("{1:02d}:{2:02d}", mins, secs)
 
         if (this._lastKills != state.powerKills) {
@@ -121,6 +156,43 @@ class PowerCzOverlayGui {
             this._lastMerits := state.powerMerits
         }
     }
+
+    ; --- 메리트 미터기 시작 / 일시정지
+    static StartMeritsMeter(state) {
+        if (state.currentState != "PowerCZ")
+            return
+
+        if (!this._isRunning) {
+            if (state.powerStartTimeMarker == "")
+                state.powerStartTimeMarker := A_NowUTC
+            this._isRunning := true
+            SoundBeep(1200, 100)
+        } else {
+            this._isRunning := false
+            SoundBeep(800, 100)
+        }
+        this.UpdateDisplay(state)
+    }
+
+    ; --- 메리트 미터기 리셋
+    static ResetMeritsMeter(state) {
+        if (state.currentState != "PowerCZ" && state.powerStartTimeMarker == "")
+            return
+
+        if (state.powerMerits > 0 && state.powerKills > 0 && state.powerLastKillTime > 0)
+            Logger.SaveLogToJSON(state)
+
+
+        this._isRunning := false
+        this._lastKills := -1
+        this._lastMerits := -1
+        this._lastTickCount := 0
+
+        state.ResetCZMetrics()
+        SoundBeep(500, 100)
+
+        this.UpdateDisplay(state)
+    }
 }
 
 
@@ -129,10 +201,10 @@ class Logger {
         logFilePath := A_ScriptDir . "\PowerCZ_Log.json"
         nowStr := FormatTime(A_Now, "yyyy-MM-dd HH:mm:ss")
 
-        mins := Floor(state.elapsedSeconds / 60)
-        secs := Mod(state.elapsedSeconds, 60)
+        mins := Floor(state.powerLastKillTime / 60)
+        secs := Mod(state.powerLastKillTime, 60)
         elapsedStr := Format("{1:02d}:{2:02d}", mins, secs)
-        ppm := (state.elapsedSeconds > 0) ? Round((state.powerMerits / state.elapsedSeconds) * 60, 1) : 0.0
+        ppm := (state.powerLastKillTime > 0) ? Round((state.powerMerits / state.powerLastKillTime) * 60, 1) : 0.0
 
         startTotal := (state.powerInitTotalMerits > 0) ? state.powerInitTotalMerits : state.totalMerits
         endTotal := state.totalMerits

@@ -26,7 +26,9 @@ class JournalParser {
         "ShieldState", ObjBindMethod(JournalParser, "OnShieldState"),
         "NavRoute", ObjBindMethod(JournalParser, "OnNavRouteUpdate"),
         "NavRouteClear", ObjBindMethod(JournalParser, "OnNavRouteClear"),
-        "ReservoirComp", ObjBindMethod(JournalParser, "OnFuelUpdate"))
+        "ReservoirComp", ObjBindMethod(JournalParser, "OnFuelUpdate"),
+        "HardpointsDeployed", ObjBindMethod(JournalParser, "OnHardpointsDeployed"),
+        "HardpointsRetracted", ObjBindMethod(JournalParser, "OnHardpointsRetracted"))
 
     static Parse(line, state) {
         ; 1. event 명 추출
@@ -123,15 +125,17 @@ class JournalParser {
             if (state.currentState != "PowerCZ") {
                 state.currentState := "PowerCZ"
             }
-            if (state.enemyFaction == "") {
+            if (state.powerEnemyFaction == "") {
                 victim := ExtractJsonVal(line, "VictimFaction")
                 if (victim != "")
-                    state.enemyFaction := victim
+                    state.powerEnemyFaction := victim
             }
-            if (state.startTimeMarker != "") {
-                startNum := ParseJournalTimestamp(state.startTimeMarker)
-                if (logTimeNum >= startNum)
+            if (state.powerStartTimeMarker != "") {
+                startNum := ParseJournalTimestamp(state.powerStartTimeMarker)
+                if (logTimeNum >= startNum) {
                     state.powerKills++
+                    state.powerLastKillTime := state.powerElapsedSeconds
+                }
             }
         }
 
@@ -271,7 +275,7 @@ class JournalParser {
         typeStr := ExtractJsonVal(line, "Type")
         if InStr(typeStr, "Warzone") || InStr(typeStr, "Powerplay") || InStr(line, "Power Conflict Zone") {
             state.currentState := "PowerCZ"
-            state.enemyFaction := ""
+            state.powerEnemyFaction := ""
         }
     }
 
@@ -284,7 +288,7 @@ class JournalParser {
         if (InStr(body, "Conflict") || InStr(line, "ConflictZone") || InStr(line, "Powerplay")) {
             if (state.currentState != "PowerCZ") {
                 state.currentState := "PowerCZ"
-                state.enemyFaction := ""
+                state.powerEnemyFaction := ""
             }
         }
     }
@@ -298,8 +302,8 @@ class JournalParser {
         }
 
         ; 세션 카운터 반영
-        if (state.startTimeMarker != "") {
-            startNum := ParseJournalTimestamp(state.startTimeMarker)
+        if (state.powerStartTimeMarker != "") {
+            startNum := ParseJournalTimestamp(state.powerStartTimeMarker)
             if (logTimeNum >= startNum) {
                 if RegExMatch(line, '"MeritsGained":(\d+)', &meritMatch) {
                     state.powerMerits += Integer(meritMatch[1])
@@ -325,35 +329,44 @@ class JournalParser {
             state.currentState := "PowerCZ"
         }
 
-        if (state.enemyFaction == "") {
+        if (state.powerEnemyFaction == "") {
             victim := ExtractJsonVal(line, "VictimFaction")
             if (victim != "")
-                state.enemyFaction := victim
+                state.powerEnemyFaction := victim
         }
 
         ; 세션 카운터 반영
-        if (state.startTimeMarker != "") {
-            startNum := ParseJournalTimestamp(state.startTimeMarker)
+        if (state.powerStartTimeMarker != "") {
+            startNum := ParseJournalTimestamp(state.powerStartTimeMarker)
             if (logTimeNum >= startNum) {
                 state.powerKills++
+                state.powerLastKillTime := state.powerElapsedSeconds
             }
         }
     }
 
     static OnShipTargeted(line, state, logTimeNum) {
-        if (state.currentState == "PowerCZ" && state.enemyFaction == "") {
+        if (state.currentState == "PowerCZ" && state.powerEnemyFaction == "") {
             targetFaction := ExtractJsonVal(line, "Faction")
             if (targetFaction != "" && targetFaction != state.systemPower)
-                state.enemyFaction := targetFaction
+                state.powerEnemyFaction := targetFaction
         }
     }
 
     static OnLeaveCZ(line, state, logTimeNum) {
         if (state.currentState == "PowerCZ") {
             state.currentState := "System"
-            state.enemyFaction := ""
+            state.powerEnemyFaction := ""
             state.powerBodyName := "Unknown"
         }
+    }
+
+    static OnHardpointsDeployed(line, state, logTimeNum) {
+        state.isHardpointsDeployed := true
+    }
+
+    static OnHardpointsRetracted(line, state, logTimeNum) {
+        state.isHardpointsDeployed := false
     }
 }
 

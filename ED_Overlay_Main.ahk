@@ -65,19 +65,9 @@ OnLogTimer() {
 }
 
 OnUiTimer() {
-    if (AppState.isRunning) {
-        AppState.elapsedSeconds++
-    }
-
     StatusOverlayGui.Update(AppState)
-    
-    ; 1. CZ 오버레이 상태 판단 및 표시 여부(isCzOverlayVisible) 먼저 업데이트
-    PowerCzOverlayGui.UpdateDisplay(AppState)
-    PowerCzOverlayGui.UpdateMetrics(AppState)
-    
-    ; 2. CZ 표시 상태에 따라 Y 위치를 계산하여 점프 경로 오버레이 업데이트
+    PowerCzOverlayGui.Update(AppState)
     NavRouteOverlayGui.Update(AppState)
-
     MissionStackOverlayGui.Update(AppState)
 }
 
@@ -86,49 +76,22 @@ OnUiTimer() {
 ; 단축키 바인딩
 ; ==============================================================================
 
-; Win + F5 : 시작 / 일시정지
+; Win + F5 : Power CZ 시작 / 일시정지
 #F5::
 {
-    if (AppState.currentState != "PowerCZ")
-        return
-
-    if (!AppState.isRunning) {
-        if (AppState.startTimeMarker == "")
-            AppState.startTimeMarker := A_NowUTC
-        AppState.isRunning := true
-        SoundBeep(1200, 100)
-    } else {
-        AppState.isRunning := false
-        SoundBeep(800, 100)
-    }
-    PowerCzOverlayGui.UpdateDisplay(AppState)
+    ; Power CZ 오버레이 시작 / 일시정지
+    PowerCzOverlayGui.StartMeritsMeter(AppState)
 }
 
-; Win + F6 : 전체 리셋 및 로그 저장
+; Win + F6 : PowerCZ 전체 리셋 
 #F6::
 {
-    if (AppState.currentState != "PowerCZ" && AppState.startTimeMarker == "")
-        return
-    
-    if (AppState.totalMerits > 0)
-        Logger.SaveLogToJSON(AppState)
-
-    AppState.ResetCZMetrics()
-    SoundBeep(500, 1000)
-
-    ; CZ 오버레이 숨김 처리 후 점프 경로 위치 갱신
-    PowerCzOverlayGui.UpdateDisplay(AppState)
-    ; NavRouteOverlayGui.Update(AppState)
+    ; Power CZ 오버레이 리셋
+    PowerCzOverlayGui.ResetMeritsMeter(AppState)
 }
 
 F7::
 {
-    ; TEST
-    /*
-    AppState.isShieldWarningActive := true
-    ShieldWarningGui.Show()
-    */
-
     ; --- TEST: 미션 스택 오버레이 테스트 데이터 로드 ---
     ; 1. 테스트 데이터 토글 (이미 활성화되어 있으면 초기화 후 숨김)
     if (AppState.missionStack.Count > 0) {
@@ -170,4 +133,10 @@ F8::
     ]
     NavRouteOverlayGui.Update(AppState)
 
+}
+
+F9:: 
+{
+    ; --- TEST: Power CZ 메리트 미터기 
+    AppState.currentState := "PowerCZ"
 }

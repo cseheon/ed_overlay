@@ -7,5 +7,14 @@
     "kill_count": 15,
     "session_merits": 6198,
     "ppm": 991.7
+  },
+  {
+    "timestamp": "2026-09-30 12:38:35",
+    "initial_total_merits": 18548799,
+    "final_total_merits": 18548799,
+    "elapsed_time": "00:06",
+    "kill_count": 0,
+    "session_merits": 0,
+    "ppm": 0.0
   }
 ]
