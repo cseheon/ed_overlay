@@ -38,11 +38,14 @@ class GameState {
     systemEconomy := ""
     systemPopulation := 0
     
-    ; --- 커맨더 상태 정보 ---
+    ; --- 현재 상태 정보 ---
     totalCredits := 0                   ; 보유한 총 크레딧 수 (StatusReader에서 갱신)
     totalMerits := 0                    ; 보유한 총 Merit 수 (JournalReader에서 갱신)
     dockedStationName := ""             ; Docked 상태에서 도킹한 스테이션 이름 (JournalReader에서 갱신)
     isHardpointsDeployed := false       ; 함선무기 전개/수납 여부
+    currentFuel := 0.0                  ; 현재 주 연료량(톤)
+    maxFuel := 0.0                      ; 주 연료탱크 최대 용량(톤)
+    currentFuelPct := 0.0               ; 현재 연료 비율(%)
 
     ; --- 방어막(Shield) 상태 및 경고 타이머 ---
     isShieldUp := true
@@ -65,10 +68,9 @@ class GameState {
     missionStack := Map()
 
     ; --- NavRoute (항로 정보) 상태 ---
-    finalDestination := "None"
+    finalDestination := ""
     totalJumps := 0
     remainingJumps := 0
-    currentFuelPct := 100.0
     isRouteActive := false
     navRoute := [] ; [{ starSystem: "", jumpDistance: 0 }, ...]
 

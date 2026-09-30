@@ -6,7 +6,7 @@ class JournalParser {
         ; 크레딧 파싱 관련 이벤트
         "LoadGame", ObjBindMethod(JournalParser, "OnCreditEvent"),
         ; 위치 및 상태 이벤트
-        "FSDJump", ObjBindMethod(JournalParser, "OnLocationEvent"),
+        "FSDJump", ObjBindMethod(JournalParser, "OnFSDJump"),
         "Location", ObjBindMethod(JournalParser, "OnLocationEvent"),
         "Docked", ObjBindMethod(JournalParser, "OnDocked"),
         "Undocked", ObjBindMethod(JournalParser, "OnUndocked"),
@@ -27,6 +27,10 @@ class JournalParser {
         "NavRoute", ObjBindMethod(JournalParser, "OnNavRouteUpdate"),
         "NavRouteClear", ObjBindMethod(JournalParser, "OnNavRouteClear"),
         "ReservoirComp", ObjBindMethod(JournalParser, "OnFuelUpdate"),
+        "ReservoirReplenished", ObjBindMethod(JournalParser, "OnFuelUpdate"),
+        "Loadout", ObjBindMethod(JournalParser, "OnLoadout"),
+        "FuelScoop", ObjBindMethod(JournalParser, "OnFuelScoop"),
+        "RefuelAll", ObjBindMethod(JournalParser, "OnRefuelAll"),
         "HardpointsDeployed", ObjBindMethod(JournalParser, "OnHardpointsDeployed"),
         "HardpointsRetracted", ObjBindMethod(JournalParser, "OnHardpointsRetracted"))
 
@@ -192,9 +196,25 @@ class JournalParser {
         }
     }
 
-    ; --- 이벤트별 독립 핸들러 (순수하게 필요한 3개 인자만 수신) ---
-
     ; FSD 점프 시 남은 점프 수 차감 및 도착 시 GUI 숨김 처리
+    static OnFSDJump(line, state, logTimeNum) {
+        ; 점프 성공 시 남은 점프 수 차감
+        if (state.finalDestination != "" && state.isRouteActive && state.remainingJumps > 0) {
+            state.remainingJumps--
+
+            ; 목적지 도착 완료 시 경로 UI 종료
+            if (state.remainingJumps <= 0) {
+                state.isRouteActive := false
+                state.remainingJumps := 0
+
+                NavRouteOverlayGui.RouteArrived(state)
+            }
+        }
+
+        this.OnLocationEvent(line, state, logTimeNum)
+    }
+
+    ; --- 위치정보 갱신
     static OnLocationEvent(line, state, logTimeNum) {
         state.starSystem := ExtractJsonVal(line, "StarSystem")
         state.systemPower := ExtractJsonVal(line, "Powers")
@@ -225,22 +245,9 @@ class JournalParser {
         if (state.currentState != "PowerCZ")
             state.currentState := "System"
 
-        ; 점프 성공 시 남은 점프 수 차감
-        if (state.isRouteActive && state.remainingJumps > 0) {
-            state.remainingJumps--
 
-            ; 목적지 도착 완료 시 경로 UI 종료
-            if (state.remainingJumps <= 0) {
-                state.isRouteActive := false
-                state.remainingJumps := 0
-
-                NavRouteOverlayGui.RouteArrived()
-            }
-        }
-
-        if RegExMatch(line, '"FuelLevel":([\d\.]+)', &fuelMatch) {
-            state.currentFuelPct := Number(fuelMatch[1]) * 100 / 32.0
-        }
+        if RegExMatch(line, '"FuelLevel"\s*:\s*([\d.]+)', &fuelMatch)
+            this.SetCurrentFuel(state, Number(fuelMatch[1]))
     }
 
     ; NavRoute 발생 시 파일 다시 읽어 설정
@@ -252,13 +259,49 @@ class JournalParser {
     static OnNavRouteClear(line, state, logTimeNum) {
         state.isRouteActive := false
         state.remainingJumps := 0
-        state.finalDestination := "None"
+        state.finalDestination := ""
+    }
+
+    static OnLoadout(line, state, logTimeNum) {
+        if RegExMatch(line, '"FuelCapacity"\s*:\s*\{[^}]*"Main"\s*:\s*([\d.]+)', &m) {
+            state.maxFuel := Number(m[1])
+            this.UpdateFuelPercent(state)
+        }
+    }
+
+    static OnFuelScoop(line, state, logTimeNum) {
+        ; Total은 스쿠프 후 주 탱크의 연료량
+        if RegExMatch(line, '"Total"\s*:\s*([\d.]+)', &m)
+            this.SetCurrentFuel(state, Number(m[1]))
+    }
+
+    static OnRefuelAll(line, state, logTimeNum) {
+        ; Amount는 보급으로 추가된 연료량
+        if RegExMatch(line, '"Amount"\s*:\s*([\d.]+)', &m) {
+            amount := Number(m[1])
+            newFuel := state.currentFuel + amount
+
+            if (state.maxFuel > 0)
+                newFuel := Min(newFuel, state.maxFuel)
+
+            this.SetCurrentFuel(state, newFuel)
+        }
     }
 
     static OnFuelUpdate(line, state, logTimeNum) {
-        if RegExMatch(line, '"FuelMain":([\d\.]+)', &fuelMatch) {
-            state.currentFuelPct := (Number(fuelMatch[1]) / 32.0) * 100
-        }
+        ; 연료 상태 이벤트의 FuelMain은 현재 주 탱크 연료량
+        if RegExMatch(line, '"FuelMain"\s*:\s*([\d.]+)', &m)
+            this.SetCurrentFuel(state, Number(m[1]))
+    }
+
+    static SetCurrentFuel(state, amount) {
+        state.currentFuel := Max(0, amount)
+        this.UpdateFuelPercent(state)
+    }
+
+    static UpdateFuelPercent(state) {
+        if (state.maxFuel > 0)
+            state.currentFuelPct := Min(100, state.currentFuel / state.maxFuel * 100)
     }
 
     static OnDocked(line, state, logTimeNum) {
@@ -491,8 +534,13 @@ class JournalReader {
                     &posMatch))
                     continue
 
+                starClass := ""
+                if RegExMatch(entry, '"StarClass"\s*:\s*"([^"]*)"', &classMatch)
+                    starClass := classMatch[1]
+
                 routeEntries.Push({
                     starSystem: systemMatch[1],
+                    starClass: starClass,
                     x: Number(posMatch[1]),
                     y: Number(posMatch[2]),
                     z: Number(posMatch[3])
@@ -502,7 +550,7 @@ class JournalReader {
             if (routeEntries.Length == 0) {
                 state.isRouteActive := false
                 state.remainingJumps := 0
-                state.finalDestination := "None"
+                state.finalDestination := ""
                 return
             }
 
@@ -517,6 +565,7 @@ class JournalReader {
                 }
                 state.navRoute.Push({
                     starSystem: entry.starSystem,
+                    starClass: entry.starClass,
                     jumpDistance: jumpDistance
                 })
             }

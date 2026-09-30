@@ -117,14 +117,8 @@ LerpColor(colorA, colorB, t) {
     cA := ParseColor(colorA)
     cB := ParseColor(colorB)
 
-    ; 정수부를 제거하고 소수부만 추출 (예: 1.6 -> 0.6, 2.5 -> 0.5)
-    t := Mod(t, 1)
-
-    ; t = 1.0, 2.0 등 정수인 경우 Mod 결과가 0이 되는 현상 방지 (1.0으로 유지)
-    ; (음수 t 값이 들어올 경우를 대비해 Max/Abs 처리)
-    if (t == 0 && t != 0.0) {
-        t := 1.0
-    }
+    ; 보간 비율을 0~1로 제한
+    t := Max(0, Min(1, Number(t)))
 
     ; RGB 채널 분리 (비트 시프트 및 AND 연산)
     rA := (cA >> 16) & 0xFF, gA := (cA >> 8) & 0xFF, bA := cA & 0xFF

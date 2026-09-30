@@ -95,7 +95,7 @@ OnUiTimer() {
     PowerCzOverlayGui.ResetMeritsMeter(AppState)
 }
 
-/*
+
 F7::
 {
     ; --- TEST: 미션 스택 오버레이 테스트 데이터 로드 ---
@@ -158,4 +158,3 @@ F9::
 
     ShieldWarningGui.Show()
 }
-*/

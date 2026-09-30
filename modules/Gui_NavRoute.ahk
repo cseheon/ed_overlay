@@ -52,6 +52,10 @@ class NavRouteOverlayGui {
             return
         }
 
+        this.finalDestination := state.finalDestination != "" ? state.finalDestination : "Unknown"
+
+        visibleRoute := state.navRoute
+
         ; 현재 성계가 경로에 있으면 그 성계부터 표시
         currentIndex := 1
         for index, routeItem in state.navRoute {
@@ -61,18 +65,9 @@ class NavRouteOverlayGui {
             }
         }
 
-        this.finalDestination := state.finalDestination != "" ? state.finalDestination : "Unknown"
-
-        /*
-        visibleRoute := []
-        Loop state.navRoute.Length - currentIndex + 1
-            visibleRoute.Push(state.navRoute[currentIndex + A_Index - 1])
-        */
-        visibleRoute := state.navRoute
-
         itemCount := visibleRoute.Length
         this.guiH := 38 + (itemCount * 24) + 10
-        this.posY := (A_ScreenHeight - this.guiH) / 2
+        this.posY := (A_ScreenHeight - this.guiH) / 3
 
         hRgn := DllCall("CreateRoundRectRgn", "Int", 0, "Int", 0,
             "Int", this.guiW, "Int", this.guiH, "Int", 12, "Int", 12, "Ptr")
@@ -85,8 +80,12 @@ class NavRouteOverlayGui {
             if (jumps != this._lastJumps)
                 SetTextAndResize(this.valLeftJumps, jumps)
 
-            if (fuel != this._lastFuel)
+            if (fuel != this._lastFuel) {
                 SetTextAndResize(this.valFuel, fuel . "%")
+                color := LerpColor("cff3c00", "c9dff00", fuel / 100)
+                hexColor := Format("c{:X}", color)
+                this.valFuel.SetFont(hexColor)
+            }
 
             right := this.guiW - 15
 
@@ -129,7 +128,11 @@ class NavRouteOverlayGui {
             ctrls := this.rowCtrls[index]
             ctrls.system.Visible := true
             ctrls.distance.Visible := true
-            ctrls.system.Value := (index == currentIndex ? "• " : "  ") . item.starSystem
+            ; ctrls.system.Value := (index == currentIndex ? "• " : "  ") . item.starSystem
+            marker := index == currentIndex
+                ? "• "
+                : (this.IsFuelScoopable(item.starClass) ? "F " : "  ")
+            ctrls.system.Value := marker . item.starSystem
             ctrls.distance.Value := index == currentIndex
                 ? "HERE"
                 : Format("{:.1f} ly", item.jumpDistance)
@@ -160,10 +163,16 @@ class NavRouteOverlayGui {
         this.textGui.Hide()
     }
 
-    static RouteArrived() {
-
-        str := Format("[ " . this.finalDestination . " ] Arrived !!")
-        ShowNotice(str)
+    static RouteArrived(state) {
+        if (this.finalDestination == state.finalDestination) {
+            str := Format("[ " . this.finalDestination . " ] Arrived !!")
+            ShowNotice(str)
+        }
         this.Hide()
+    }
+
+    static IsFuelScoopable(starClass) {
+        scoopableClasses := "|O|B|A|F|G|K|M|"
+        return InStr(scoopableClasses, "|" . StrUpper(Trim(starClass)) . "|") > 0
     }
 }

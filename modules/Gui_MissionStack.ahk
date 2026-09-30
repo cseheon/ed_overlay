@@ -78,7 +78,7 @@ class MissionStackOverlayGui {
         itemCount := stackList.Length
         calculatedH := 35 + (itemCount * 24) + 10
         this.guiH := calculatedH
-        this.posY := (A_ScreenHeight - calculatedH) / 2 ; 화면 우측 중앙 수직 정렬
+        this.posY := (A_ScreenHeight - calculatedH) / 3 ; 화면 우측 중앙 수직 정렬
 
         ; 배경 둥근 모서리 적용
         hRgn := DllCall("CreateRoundRectRgn", "Int", 0, "Int", 0, "Int", this.guiW, "Int", this.guiH, "Int", 12, "Int", 12, "Ptr")
