@@ -5,13 +5,20 @@ class MissionStackOverlayGui {
     static textGui := unset
     static lblTitle := unset
     static lblTotal := unset
+    static valTotal := unset
     static itemCtrls := []
     static posX := 0, posY := 0, guiW := 320, guiH := 0
 
+    static _latTotalStr := ""
+
     static Init(px := 0, py := 0, w := 320) {
         this.guiW := w
+
         ; X 좌표: 지정값이 없으면 화면 우측 끝에서 20px 안쪽
-        this.posX := (px != 0) ? px : (A_ScreenWidth - w - 20)
+        ; this.posX := (px != 0) ? px : (A_ScreenWidth - w - 20)
+
+        ; X 좌표: 지정값이 없으면 화면 좌측 끝에서 20px 안쪽
+        this.posX := (px != 0) ? px : 20
 
         ; 1. 배경 GUI (반투명 검은색)
         this.bgGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20", "ED_Stack_BG")
@@ -27,8 +34,11 @@ class MissionStackOverlayGui {
         this.textGui.SetFont("s10 bold Q5 c00ffff", "Consolas")
         this.lblTitle := this.textGui.Add("Text", "x15 y10 w160", "MISSION STACK")
 
-        this.textGui.SetFont("s10 bold Q5 cff7b00", "Consolas")
-        this.lblTotal := this.textGui.Add("Text", "x180 y10 w125 Right", "TOTAL: 0")
+        this.textGui.SetFont("s8 bold Q5 cff7b00", "Consolas")
+        this.lblTotal := this.textGui.Add("Text", "x245 y12", "TOTAL")
+
+        this.textGui.SetFont("s10 bold Q5 cffffff", "Consolas")
+        this.valTotal := this.textGui.Add("Text", "x+8 y10", "99/99")
 
         this.itemCtrls := []
         this.Hide()
@@ -51,10 +61,10 @@ class MissionStackOverlayGui {
 
         for faction, data in state.missionStack {
             killsLeft := data.killsLeft
-            
+
             if (killsLeft == 0)
                 completedCount++
-            
+
             if (killsLeft > maxKillsLeft)
                 maxKillsLeft := killsLeft
 
@@ -75,14 +85,30 @@ class MissionStackOverlayGui {
         DllCall("SetWindowRgn", "Ptr", this.bgGui.Hwnd, "Ptr", hRgn, "UInt", true)
 
         ; 완료 목록 수 / 총 목록 수 업데이트
-        this.lblTotal.Value := Format("STACK: {1}/{2}", completedCount, totalCount)
+        totalStr := Format("{1}/{2}", completedCount, totalCount)
+
+        if (totalStr != this._latTotalStr) {
+            SetTextAndResize(this.valTotal, totalStr)
+            this._latTotalStr := totalStr
+
+            right := this.guiW - 15
+
+            this.lblTotal.GetPos(&x, &y, &labelW, &h)
+            this.valTotal.GetPos(&x, &y, &valueW, &h)
+
+            right -= valueW
+            this.valTotal.Move(right)
+            right -= 10 + labelW
+            this.lblTotal.Move(right)
+            right -= 25
+        }
 
         ; 3. 기존 라인 컨트롤 재활용 및 부족 시 추가 생성
         while (this.itemCtrls.Length < itemCount) {
             idx := this.itemCtrls.Length + 1
             currY := 35 + ((idx - 1) * 24)
 
-            this.textGui.SetFont("s10 bold Q5 cWhite", "Segoe UI")
+            this.textGui.SetFont("s10 bold Q5 cWhite", "Consolas")
             ctrlFaction := this.textGui.Add("Text", Format("x15 y{1} w220 0x4000", currY), "")
 
             this.textGui.SetFont("s10 bold Q5 cWhite", "Consolas")

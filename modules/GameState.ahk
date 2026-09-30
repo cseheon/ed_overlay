@@ -70,6 +70,7 @@ class GameState {
     remainingJumps := 0
     currentFuelPct := 100.0
     isRouteActive := false
+    navRoute := [] ; [{ starSystem: "", jumpDistance: 0 }, ...]
 
     ; --- Misstion Stack
     isStackOverlayVisible := true

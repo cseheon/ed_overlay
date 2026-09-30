@@ -43,14 +43,10 @@ PowerCzOverlayGui.Init(pos2X, pos2Y, gui2W, gui2H)
 ; 방어막 경고 패널 초기화
 ShieldWarningGui.Init(iniPath)
 
-; 점프 경로 GUI 위치 및 너비 설정 (상단 중앙) ---
-guiNavW := Integer(IniRead(iniPath, "GuiNavRoute", "Width", "620"))
-guiNavH := Integer(IniRead(iniPath, "GuiNavRoute", "Height", "38"))
-posNavX := (A_ScreenWidth - guiNavW) / 2
-posNavY := Integer(IniRead(iniPath, "GuiNavRoute", "Y", "20")) ; 화면 맨 상단 약간 아래
-NavRouteOverlayGui.Init(posNavX, posNavY, guiNavW, guiNavH)
+; 점프 경로 GUI 위치 및 너비 설정 (우측 중앙 자동 배치) ---
+NavRouteOverlayGui.Init()
 
-; 미션 스택 GUI 초기화 (우측 중앙 자동 배치) ---
+; 미션 스택 GUI 초기화 (좌측 중앙 자동 배치) ---
 MissionStackOverlayGui.Init()
 
 ; --- 첫 렌더링 및 저널 스캔 ---
@@ -122,7 +118,7 @@ OnUiTimer() {
 
     ; CZ 오버레이 숨김 처리 후 점프 경로 위치 갱신
     PowerCzOverlayGui.UpdateDisplay(AppState)
-    NavRouteOverlayGui.Update(AppState)
+    ; NavRouteOverlayGui.Update(AppState)
 }
 
 F7::
@@ -133,9 +129,7 @@ F7::
     ShieldWarningGui.Show()
     */
 
-    StatusOverlayGui.Show()
-
-    /*
+    ; --- TEST: 미션 스택 오버레이 테스트 데이터 로드 ---
     ; 1. 테스트 데이터 토글 (이미 활성화되어 있으면 초기화 후 숨김)
     if (AppState.missionStack.Count > 0) {
         AppState.missionStack.Clear()
@@ -154,15 +148,26 @@ F7::
     ; 3. GUI 즉시 갱신
     MissionStackOverlayGui.Update(AppState)
     ShowNotice("Mission Stack Test Loaded!", 2000)
-    */
 }
 
 F8::
 {
-    ; TEST
-    ; ShieldWarningGui.Hide()
+    ; --- TEST: 점프 경로 오버레이 테스트 데이터 로드 ---
+    AppState.starSystem := "Wolf 359"
+    AppState.totalJumps := 7
+    AppState.isRouteActive := true
+    AppState.finalDestination := "Ross 154"
 
-    AppState.currentTotalMerits += 300
+    AppState.navRoute := [
+        { starSystem: "Sol", jumpDistance: 0 },
+        { starSystem: "Alpha Centauri", jumpDistance: 4.3 },
+        { starSystem: "Barnard's Star", jumpDistance: 5.96 },
+        { starSystem: "Wolf 359", jumpDistance: 7.78 },
+        { starSystem: "Lalande 21185", jumpDistance: 8.31 },
+        { starSystem: "Sirius", jumpDistance: 8.6 },
+        { starSystem: "Luyten 726-8", jumpDistance: 8.73 },
+        { starSystem: "Ross 154", jumpDistance: 9.68 }
+    ]
+    NavRouteOverlayGui.Update(AppState)
 
-    ; StatusOverlayGui.Hide()
 }

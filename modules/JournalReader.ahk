@@ -5,7 +5,6 @@ class JournalParser {
     static Handlers := Map(
         ; 크레딧 파싱 관련 이벤트
         "LoadGame", ObjBindMethod(JournalParser, "OnCreditEvent"),
-
         ; 위치 및 상태 이벤트
         "FSDJump", ObjBindMethod(JournalParser, "OnLocationEvent"),
         "Location", ObjBindMethod(JournalParser, "OnLocationEvent"),
@@ -27,7 +26,7 @@ class JournalParser {
         "ShieldState", ObjBindMethod(JournalParser, "OnShieldState"),
         "NavRoute", ObjBindMethod(JournalParser, "OnNavRouteUpdate"),
         "NavRouteClear", ObjBindMethod(JournalParser, "OnNavRouteClear"),
-        "ReservoirComp", ObjBindMethod(JournalParser, "OnFuelUpdate")    )
+        "ReservoirComp", ObjBindMethod(JournalParser, "OnFuelUpdate"))
 
     static Parse(line, state) {
         ; 1. event 명 추출
@@ -405,6 +404,7 @@ class JournalReader {
         }
     }
 
+    /*
     static ReadNavRouteFile(state) {
         navFilePath := RegExReplace(state.currentLogFile, "Journal\..*$", "NavRoute.json")
         if (!FileExist(navFilePath)) {
@@ -412,10 +412,10 @@ class JournalReader {
             state.remainingJumps := 0
             return
         }
-
+    
         try {
             jsonText := FileRead(navFilePath, "UTF-8")
-
+    
             ; Route 배열 존재 여부 및 성계 탐색
             if InStr(jsonText, '"Route"') {
                 matches := []
@@ -424,7 +424,7 @@ class JournalReader {
                     matches.Push(m[1])
                     pos += m.Len
                 }
-
+    
                 ; 경로 성계가 2개 이상일 때만 활성화 (현재 위치 + 최소 1개 이상의 목적지)
                 if (matches.Length > 1) {
                     state.finalDestination := matches[matches.Length] ; 배열의 마지막 성계가 최종 목적지
@@ -449,4 +449,74 @@ class JournalReader {
             state.remainingJumps := 0
         }
     }
+    */
+
+
+    static ReadNavRouteFile(state) {
+        navFilePath := RegExReplace(state.currentLogFile, "Journal\..*$", "NavRoute.json")
+        state.navRoute := []
+
+        if (!FileExist(navFilePath)) {
+            state.isRouteActive := false
+            state.remainingJumps := 0
+            return
+        }
+
+        try {
+            jsonText := FileRead(navFilePath, "UTF-8")
+            routeEntries := []
+            pos := 1
+
+            while (pos := RegExMatch(jsonText, '\{[^{}]*\}', &obj, pos)) {
+                entry := obj[0]
+                pos += obj.Len
+
+                if (!RegExMatch(entry, '"StarSystem":"([^"]+)"', &systemMatch))
+                    continue
+                if (!RegExMatch(entry,
+                    '"StarPos":\[\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\]',
+                    &posMatch))
+                    continue
+
+                routeEntries.Push({
+                    starSystem: systemMatch[1],
+                    x: Number(posMatch[1]),
+                    y: Number(posMatch[2]),
+                    z: Number(posMatch[3])
+                })
+            }
+
+            if (routeEntries.Length == 0) {
+                state.isRouteActive := false
+                state.remainingJumps := 0
+                state.finalDestination := "None"
+                return
+            }
+
+            for index, entry in routeEntries {
+                jumpDistance := 0
+                if (index > 1) {
+                    previous := routeEntries[index - 1]
+                    dx := entry.x - previous.x
+                    dy := entry.y - previous.y
+                    dz := entry.z - previous.z
+                    jumpDistance := Sqrt(dx * dx + dy * dy + dz * dz)
+                }
+                state.navRoute.Push({
+                    starSystem: entry.starSystem,
+                    jumpDistance: jumpDistance
+                })
+            }
+
+            state.finalDestination := routeEntries[routeEntries.Length].starSystem
+            state.totalJumps := Max(0, routeEntries.Length - 1)
+            state.remainingJumps := state.totalJumps
+            state.isRouteActive := (routeEntries.Length > 1)
+        } catch {
+            state.navRoute := []
+            state.isRouteActive := false
+            state.remainingJumps := 0
+        }
+    }
+
 }
