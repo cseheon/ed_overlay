@@ -133,6 +133,8 @@ class JournalParser {
     static OnKillEvent(line, state, logTimeNum) {
         ; 기존 FactionKillBond 처리 로직 수행
         if InStr(line, "FactionKillBond") {
+
+            /*
             if (state.currentState != "PowerCZ") {
                 state.currentState := "PowerCZ"
             }
@@ -146,6 +148,21 @@ class JournalParser {
                 if (logTimeNum >= startNum) {
                     state.powerKills++
                     state.powerLastKillTime := state.powerElapsedSeconds
+                }
+            }
+            */
+            if (state.currentState == "PowerCZ") {
+                if (state.powerEnemyFaction == "") {
+                    victim := ExtractJsonVal(line, "VictimFaction")
+                    if (victim != "")
+                        state.powerEnemyFaction := victim
+                }
+                if (state.powerStartTimeMarker != "") {
+                    startNum := ParseJournalTimestamp(state.powerStartTimeMarker)
+                    if (logTimeNum >= startNum) {
+                        state.powerKills++
+                        state.powerLastKillTime := state.powerElapsedSeconds
+                    }
                 }
             }
         }
@@ -323,7 +340,8 @@ class JournalParser {
 
     static OnSupercruiseDestinationDrop(line, state, logTimeNum) {
         typeStr := ExtractJsonVal(line, "Type")
-        if InStr(typeStr, "Warzone") || InStr(typeStr, "Powerplay") || InStr(line, "Power Conflict Zone") {
+        ; if InStr(typeStr, "Warzone") || InStr(typeStr, "Powerplay") || InStr(line, "Power Conflict Zone") {
+        if InStr(typeStr, "Warzone_Powerplay") || InStr(line, "Power Conflict Zone") {
             state.currentState := "PowerCZ"
             state.powerEnemyFaction := ""
         }
@@ -335,22 +353,27 @@ class JournalParser {
             state.powerBodyName := body
         }
 
+        /*
         if (InStr(body, "Conflict") || InStr(line, "ConflictZone") || InStr(line, "Powerplay")) {
             if (state.currentState != "PowerCZ") {
                 state.currentState := "PowerCZ"
                 state.powerEnemyFaction := ""
+                ShowNotice(line, 10000)
             }
         }
+        */
     }
 
     static OnPowerplayMerits(line, state, logTimeNum) {
         if RegExMatch(line, '"TotalMerits":(\d+)', &totalMatch) {
             state.totalMerits := Integer(totalMatch[1])
         }
+
+        /*
         if (state.currentState != "PowerCZ") {
             state.currentState := "PowerCZ"
         }
-
+        
         ; 세션 카운터 반영
         if (state.powerStartTimeMarker != "") {
             startNum := ParseJournalTimestamp(state.powerStartTimeMarker)
@@ -366,6 +389,25 @@ class JournalParser {
                 }
             }
         }
+        */
+
+        if (state.currentState == "PowerCZ") {
+            ; 세션 카운터 반영
+            if (state.powerStartTimeMarker != "") {
+                startNum := ParseJournalTimestamp(state.powerStartTimeMarker)
+                if (logTimeNum >= startNum) {
+                    if RegExMatch(line, '"MeritsGained":(\d+)', &meritMatch) {
+                        state.powerMerits += Integer(meritMatch[1])
+                    }
+                    if RegExMatch(line, '"TotalMerits":(\d+)', &totalMatch) {
+                        parsedTotal := Integer(totalMatch[1])
+                        if (state.powerInitTotalMerits == 0 && RegExMatch(line, '"MeritsGained":(\d+)', &gainedMatch)) {
+                            state.powerInitTotalMerits := parsedTotal - Integer(gainedMatch[1])
+                        }
+                    }
+                }
+            }
+        }
     }
 
     static OnPowerplayEvent(line, state, logTimeNum) {
@@ -375,22 +417,40 @@ class JournalParser {
     }
 
     static OnFactionKillBond(line, state, logTimeNum) {
+        /*
         if (state.currentState != "PowerCZ") {
             state.currentState := "PowerCZ"
         }
-
+        
         if (state.powerEnemyFaction == "") {
             victim := ExtractJsonVal(line, "VictimFaction")
             if (victim != "")
                 state.powerEnemyFaction := victim
         }
-
+        
         ; 세션 카운터 반영
         if (state.powerStartTimeMarker != "") {
             startNum := ParseJournalTimestamp(state.powerStartTimeMarker)
             if (logTimeNum >= startNum) {
                 state.powerKills++
                 state.powerLastKillTime := state.powerElapsedSeconds
+            }
+        }
+        */
+        if (state.currentState == "PowerCZ") {
+            if (state.powerEnemyFaction == "") {
+                victim := ExtractJsonVal(line, "VictimFaction")
+                if (victim != "")
+                    state.powerEnemyFaction := victim
+            }
+
+            ; 세션 카운터 반영
+            if (state.powerStartTimeMarker != "") {
+                startNum := ParseJournalTimestamp(state.powerStartTimeMarker)
+                if (logTimeNum >= startNum) {
+                    state.powerKills++
+                    state.powerLastKillTime := state.powerElapsedSeconds
+                }
             }
         }
     }
