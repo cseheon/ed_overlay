@@ -14,12 +14,12 @@ class ShieldWarningGui {
     static _blinkTimer := ObjBindMethod(ShieldWarningGui, "OnBlinkTimer")
     static _blinkStartTick := 0
 
-    static Init(iniPath) {
-        this.guiW := Integer(IniRead(iniPath, "ShieldWarning", "Width", "400"))
-        this.guiH := Integer(IniRead(iniPath, "ShieldWarning", "Height", "40"))
-        this.posX := Integer(IniRead(iniPath, "ShieldWarning", "X", (A_ScreenWidth - this.guiW) / 2))
-        this.posY := Integer(IniRead(iniPath, "ShieldWarning", "Y", A_ScreenWidth / 7))
-        this.duration := Integer(IniRead(iniPath, "ShieldWarning", "Duration", "5"))
+    static Init(px, py, width, height, duration) {
+        this.guiW := width
+        this.guiH := height
+        this.posX := px
+        this.posY := py
+        this.duration := duration
 
         ; 배경 GUI 설정 (초기 빨간색)
         this._bgGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20", "ED_Shield_BG")

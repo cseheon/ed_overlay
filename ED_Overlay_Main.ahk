@@ -31,17 +31,22 @@ uiInterval := Integer(IniRead(iniPath, "Settings", "UiIntervalMs", "1000"))
 pos1X := 0      ; Integer(IniRead(iniPath, "GuiStatus", "X", "0"))
 pos1Y := Integer(IniRead(iniPath, "GuiStatus", "Y", "20"))
 gui1W := A_ScreenWidth      ; gui1W := Integer(IniRead(iniPath, "GuiStatus", "Width", "800"))
-gui1H := Integer(IniRead(iniPath, "GuiStatus", "Height", "40"))
+gui1H := Integer(IniRead(iniPath, "GuiStatus", "Height", "38"))
 StatusOverlayGui.Init(pos1X, pos1Y, gui1W, gui1H)
 
 gui2W := Integer(IniRead(iniPath, "GuiPowerCZ", "Width", "400"))
-gui2H := Integer(IniRead(iniPath, "GuiPowerCZ", "Height", "40"))
+gui2H := Integer(IniRead(iniPath, "GuiPowerCZ", "Height", "38"))
 pos2X := (A_ScreenWidth - gui2W) / 2
 pos2Y := Integer(IniRead(iniPath, "GuiPowerCZ", "Y", "20"))
 PowerCzOverlayGui.Init(pos2X, pos2Y, gui2W, gui2H)
 
 ; 방어막 경고 패널 초기화
-ShieldWarningGui.Init(iniPath)
+guiW := Integer(IniRead(iniPath, "ShieldWarning", "Width", "400"))
+guiH := Integer(IniRead(iniPath, "ShieldWarning", "Height", "40"))
+posX := Integer(IniRead(iniPath, "ShieldWarning", "X", (A_ScreenWidth - guiW) / 2))
+posY := Integer(IniRead(iniPath, "ShieldWarning", "Y", A_ScreenWidth / 7))
+duration := Integer(IniRead(iniPath, "ShieldWarning", "Duration", "5"))
+ShieldWarningGui.Init(posX, posY, guiW, guiH, duration)
 
 ; 점프 경로 GUI 위치 및 너비 설정 (우측 중앙 자동 배치) ---
 NavRouteOverlayGui.Init()
@@ -138,5 +143,7 @@ F8::
 F9:: 
 {
     ; --- TEST: Power CZ 메리트 미터기 
-    AppState.currentState := "PowerCZ"
+    ; AppState.currentState := "PowerCZ"
+
+    ShieldWarningGui.Show()
 }
