@@ -21,8 +21,6 @@
 * **NavRoute & Jump Tracker**: Shows step-by-step progress for FSD jump routes and system arrivals.
 * **Shield Loss Alert**: Instant visual and audio notification when your ship's shield drops.
 * **Powerplay Merit Tracker**: Real-time Merit counter during Powerplay Combat Zone engagements.
-  * `Win + F5`: Start / Pause tracking
-  * `Win + F6`: Reset counter
 
 ---
 
