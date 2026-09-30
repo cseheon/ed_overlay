@@ -32,7 +32,7 @@ class NavRouteOverlayGui {
         this.lblTitle := this.textGui.Add("Text", "x15 y10 w135", "JUMP ROUTE")
 
         this.textGui.SetFont("s8 w700 Q5 cff7b00", "Consolas")
-        this.lblLeftJumps := this.textGui.Add("Text", "x155 y12", "LEFT JUMPS")
+        this.lblLeftJumps := this.textGui.Add("Text", "x155 y12", "JUMPS LEFT")
 
         this.textGui.SetFont("s10 bold Q5 cffffff", "Consolas")
         this.valLeftJumps := this.textGui.Add("Text", "x+8 y10 w20", "99")
@@ -78,10 +78,8 @@ class NavRouteOverlayGui {
             "Int", this.guiW, "Int", this.guiH, "Int", 12, "Int", 12, "Ptr")
         DllCall("SetWindowRgn", "Ptr", this.bgGui.Hwnd, "Ptr", hRgn, "UInt", true)
 
-        fuel := 100  ; Round(state.currentFuelPct)
-        jumps := 99  ; Max(0, itemCount - currentIndex)
-        ; this.valLeftJumps.Value := jumps
-        ; this.valFuel.Value := fuel . "%"
+        fuel := Round(state.currentFuelPct)
+        jumps := Max(0, itemCount - currentIndex)
 
         if (jumps != this._lastJumps || fuel != this._lastFuel) {
             if (jumps != this._lastJumps)

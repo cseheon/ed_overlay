@@ -121,6 +121,16 @@ F7::
 F8::
 {
     ; --- TEST: 점프 경로 오버레이 테스트 데이터 로드 ---
+    if (AppState.isRouteActive) {
+        AppState.isRouteActive := false
+        AppState.remainingJumps := 0
+        AppState.finalDestination := "None"
+
+        NavRouteOverlayGui.Update(AppState)
+        ShowNotice("Jump Route Test Cleared", 1500)
+        return
+    }
+
     AppState.starSystem := "Wolf 359"
     AppState.totalJumps := 7
     AppState.isRouteActive := true
@@ -137,7 +147,7 @@ F8::
         { starSystem: "Ross 154", jumpDistance: 9.68 }
     ]
     NavRouteOverlayGui.Update(AppState)
-
+    ShowNotice("Jump Route Test Loaded", 2000)
 }
 
 F9:: 
