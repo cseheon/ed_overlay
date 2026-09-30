@@ -5,6 +5,7 @@ class JournalParser {
     static Handlers := Map(
         ; 크레딧 파싱 관련 이벤트
         "LoadGame", ObjBindMethod(JournalParser, "OnCreditEvent"),
+        "Music", ObjBindMethod(JournalParser, "OnMusicEvent"),
         ; 위치 및 상태 이벤트
         "FSDJump", ObjBindMethod(JournalParser, "OnFSDJump"),
         "Location", ObjBindMethod(JournalParser, "OnLocationEvent"),
@@ -58,6 +59,12 @@ class JournalParser {
         if RegExMatch(line, '"Credits":(\d+)', &creditMatch) {
             state.totalCredits := Integer(creditMatch[1])
         }
+    }
+
+    static OnMusicEvent(line, state, logTimeNum) {
+        musicTrack := ExtractJsonVal(line, "MusicTrack")
+        state.isGalaxyMapOpened := (musicTrack == "GalaxyMap")
+        state.isSystemMapOpened := (musicTrack == "SystemMap")
     }
 
     ; --- 미션 관련 이벤트 파싱 ---

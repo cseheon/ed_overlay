@@ -46,6 +46,8 @@ class GameState {
     currentFuel := 0.0                  ; 현재 주 연료량(톤)
     maxFuel := 0.0                      ; 주 연료탱크 최대 용량(톤)
     currentFuelPct := 0.0               ; 현재 연료 비율(%)
+    isGalaxyMapOpened := false          ; 갤럭시 맵이 열려 있는가 ?
+    isSystemMapOpened := false          ; 시스템 맵이 열려 있는가 ?
 
     ; --- 방어막(Shield) 상태 및 경고 타이머 ---
     isShieldUp := true
