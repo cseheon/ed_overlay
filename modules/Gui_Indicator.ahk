@@ -10,23 +10,6 @@ class IndicatorOverlayGui {
     static _backgroundAlpha := 140
     static _textDefaultColor := "404040"
 
-    /*
-    static _definitions := [
-        { label: "DOCK", key: "isDocked", activeText: "00E5FF", activeBackground: "003B45" },
-        { label: "GEAR", key: "isLandingGearDeployed", activeText: "B2FF59", activeBackground: "304500" }, 
-        { label: "SHIELD DOWN", key: "isShieldsDown", activeText: "FF5252", activeBackground: "4A1717" }, 
-        { label: "FA OFF", key: "isFlightAssistOff", activeText: "FFD740", activeBackground: "4A3B00" },
-        { label: "HARDPOINTS", key: "isHardpointsDeployed", activeText: "FF9100", activeBackground: "4A2A00" },
-        { label: "CARGO", key: "isCargoScoopDeployed", activeText: "40C4FF", activeBackground: "00354A" }, 
-        { label: "SILENT", key: "isSlientRunning", activeText: "FF4081", activeBackground: "4A1028" }, 
-        { label: "FUEL SCOOP", key: "isScoopingFuel", activeText: "69F0AE", activeBackground: "174A32" }, 
-        { label: "FSD COOL", key: "isFsdcooldown", activeText: "7C9DFF", activeBackground: "202E55" }, 
-        { label: "LOW FUEL", key: "isLowFuel", activeText: "FF1744", activeBackground: "4A1020" }, 
-        { label: "OVERHEAT", key: "isOverheating", activeText: "FF6D00", activeBackground: "4A2300" }, 
-        { label: "NIGHT VISION", key: "isNightVisionActive", activeText: "EEFF41", activeBackground: "394500" }
-    ]
-    */
-
     static _definitions := [
         { label: "DOCK", key: "isDocked", activeText: "00F5FF", activeBackground: "00434A" }, 
         { label: "GEAR", key: "isLandingGearDeployed", activeText: "C6FF00", activeBackground: "354A00" }, 

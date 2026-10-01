@@ -8,7 +8,7 @@ SetWorkingDir(A_ScriptDir)
 #Include "modules/GameState.ahk"
 #Include "modules/StatusReader.ahk"
 #Include "modules/Gui_Status.ahk"
-#Include "modules/Gui_PowerCZ.ahk"
+; #Include "modules/Gui_PowerCZ.ahk"
 #Include "modules/Gui_ShieldWarning.ahk"
 #Include "modules/Gui_NavRoute.ahk"
 #Include "modules/Gui_MissionStack.ahk"
@@ -29,17 +29,19 @@ readInterval := Integer(IniRead(iniPath, "Settings", "ReadIntervalMs", "200"))
 uiInterval := Integer(IniRead(iniPath, "Settings", "UiIntervalMs", "1000"))
 
 ; --- GUI 레이아웃 좌표 초기화 ---
-pos1X := 0      ; Integer(IniRead(iniPath, "GuiStatus", "X", "0"))
+pos1X := 0
 pos1Y := Integer(IniRead(iniPath, "GuiStatus", "Y", "20"))
-gui1W := A_ScreenWidth      ; gui1W := Integer(IniRead(iniPath, "GuiStatus", "Width", "800"))
+gui1W := A_ScreenWidth
 gui1H := Integer(IniRead(iniPath, "GuiStatus", "Height", "38"))
 StatusOverlayGui.Init(pos1X, pos1Y, gui1W, gui1H)
 
+/*
 gui2W := Integer(IniRead(iniPath, "GuiPowerCZ", "Width", "400"))
 gui2H := Integer(IniRead(iniPath, "GuiPowerCZ", "Height", "38"))
 pos2X := (A_ScreenWidth - gui2W) / 2
 pos2Y := Integer(IniRead(iniPath, "GuiPowerCZ", "Y", "20"))
 PowerCzOverlayGui.Init(pos2X, pos2Y, gui2W, gui2H)
+*/
 
 ; 방어막 경고 패널 초기화
 guiW := Integer(IniRead(iniPath, "ShieldWarning", "Width", "400"))
@@ -76,7 +78,7 @@ OnLogTimer() {
 
 OnUiTimer() {
     StatusOverlayGui.Update(AppState)
-    PowerCzOverlayGui.Update(AppState)
+    ; PowerCzOverlayGui.Update(AppState)
     NavRouteOverlayGui.Update(AppState)
     MissionStackOverlayGui.Update(AppState)
     IndicatorOverlayGui.Update(AppState)
@@ -91,14 +93,16 @@ OnUiTimer() {
 #F5::
 {
     ; Power CZ 오버레이 시작 / 일시정지
-    PowerCzOverlayGui.StartMeritsMeter(AppState)
+    StatusOverlayGui.StartPowerCZTimer(AppState)
+    ; PowerCzOverlayGui.StartMeritsMeter(AppState)
 }
 
 ; Win + F6 : PowerCZ 전체 리셋 
 #F6::
 {
     ; Power CZ 오버레이 리셋
-    PowerCzOverlayGui.ResetMeritsMeter(AppState)
+    StatusOverlayGui.ResetPowerCZTimer(AppState)
+    ; PowerCzOverlayGui.ResetMeritsMeter(AppState)
 }
 
 
@@ -109,7 +113,6 @@ F7::
     if (AppState.missionStack.Count > 0) {
         AppState.missionStack.Clear()
         MissionStackOverlayGui.Update(AppState)
-        ShowNotice("Mission Stack Test Cleared", 1500)
         return
     }
 
@@ -122,7 +125,6 @@ F7::
 
     ; 3. GUI 즉시 갱신
     MissionStackOverlayGui.Update(AppState)
-    ShowNotice("Mission Stack Test Loaded!", 2000)
 }
 
 F8::
@@ -134,7 +136,6 @@ F8::
         AppState.finalDestination := "None"
 
         NavRouteOverlayGui.Update(AppState)
-        ShowNotice("Jump Route Test Cleared", 1500)
         return
     }
 
@@ -144,17 +145,16 @@ F8::
     AppState.finalDestination := "Ross 154"
 
     AppState.navRoute := [
-        { starSystem: "Sol", jumpDistance: 0 },
-        { starSystem: "Alpha Centauri", jumpDistance: 4.3 },
-        { starSystem: "Barnard's Star", jumpDistance: 5.96 },
-        { starSystem: "Wolf 359", jumpDistance: 7.78 },
-        { starSystem: "Lalande 21185", jumpDistance: 8.31 },
-        { starSystem: "Sirius", jumpDistance: 8.6 },
-        { starSystem: "Luyten 726-8", jumpDistance: 8.73 },
-        { starSystem: "Ross 154", jumpDistance: 9.68 }
+        { starSystem: "Sol", jumpDistance: 0, starClass: "A" },
+        { starSystem: "Alpha Centauri", jumpDistance: 4.3, starClass: "G" },
+        { starSystem: "Barnard's Star", jumpDistance: 5.96, starClass: "M" },
+        { starSystem: "Wolf 359", jumpDistance: 7.78, starClass: "M" },
+        { starSystem: "Lalande 21185", jumpDistance: 8.31, starClass: "M" },
+        { starSystem: "Sirius", jumpDistance: 8.6, starClass: "A" },
+        { starSystem: "Luyten 726-8", jumpDistance: 8.73, starClass: "M" },
+        { starSystem: "Ross 154", jumpDistance: 9.68, starClass: "M" }
     ]
     NavRouteOverlayGui.Update(AppState)
-    ShowNotice("Jump Route Test Loaded", 2000)
 }
 
 F9:: 

@@ -151,11 +151,13 @@ class NavRouteOverlayGui {
             this.rowCtrls[idx].distance.Visible := false
         }
 
-        this.bgGui.Show(Format("x{1} y{2} w{3} h{4} NoActivate",
-            this.posX, this.posY, this.guiW, this.guiH))
-        this.textGui.Show(Format("x{1} y{2} w{3} h{4} NoActivate",
-            this.posX, this.posY, this.guiW, this.guiH))
+        this.Show()
         WinRedraw(this.textGui.Hwnd)
+    }
+
+    static Show() {
+        this.bgGui.Show(Format("x{1} y{2} w{3} h{4} NoActivate", this.posX, this.posY, this.guiW, this.guiH))
+        this.textGui.Show(Format("x{1} y{2} w{3} h{4} NoActivate", this.posX, this.posY, this.guiW, this.guiH))
     }
 
     static Hide() {

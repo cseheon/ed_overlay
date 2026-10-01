@@ -3,10 +3,8 @@
 class JournalParser {
     ; ObjBindMethod를 활용해 메서드의 호출 대상(JournalParser)을 미리 바인딩
     static Handlers := Map(
-        ; 크레딧 파싱 관련 이벤트
-        "LoadGame", ObjBindMethod(JournalParser, "OnCreditEvent"),
+        "LoadGame", ObjBindMethod(JournalParser, "OnLoadGameEvent"),
         "Music", ObjBindMethod(JournalParser, "OnMusicEvent"),
-        ; 위치 및 상태 이벤트
         "FSDJump", ObjBindMethod(JournalParser, "OnFSDJump"),
         "Location", ObjBindMethod(JournalParser, "OnLocationEvent"),
         "Docked", ObjBindMethod(JournalParser, "OnDocked"),
@@ -33,7 +31,8 @@ class JournalParser {
         "FuelScoop", ObjBindMethod(JournalParser, "OnFuelScoop"),
         "RefuelAll", ObjBindMethod(JournalParser, "OnRefuelAll"),
         "HardpointsDeployed", ObjBindMethod(JournalParser, "OnHardpointsDeployed"),
-        "HardpointsRetracted", ObjBindMethod(JournalParser, "OnHardpointsRetracted"))
+        "HardpointsRetracted", ObjBindMethod(JournalParser, "OnHardpointsRetracted"),
+        "Shutdown", ObjBindMethod(JournalParser, "OnShutdownEvent"),)
 
     static Parse(line, state) {
         ; 1. event 명 추출
@@ -54,10 +53,18 @@ class JournalParser {
     }
 
     ; --- 보유 크레딧(Credits) 파싱 핸들러 ---
-    static OnCreditEvent(line, state, logTimeNum) {
+    static OnLoadGameEvent(line, state, logTimeNum) {
         ; 저널 라인 내에 "Credits": 수치가 포함되어 있는 경우 state.credits 갱신
         if RegExMatch(line, '"Credits":(\d+)', &creditMatch) {
             state.totalCredits := Integer(creditMatch[1])
+        }
+        ; 게임모드 (Open / Solo / PrivateGroup / Offline) 파싱
+        if RegExMatch(line, '"GameMode":"([^"]+)"', &modeMatch) {
+            state.gameMode := modeMatch[1]
+        }
+        ; Commander 이름 파싱
+        if RegExMatch(line, '"Commander":"([^"]+)"', &commanderMatch) {
+            state.commanderName := commanderMatch[1]
         }
     }
 
@@ -441,6 +448,18 @@ class JournalParser {
 
     static OnHardpointsRetracted(line, state, logTimeNum) {
         state.isHardpointsDeployed := false
+    }
+
+    static OnShutdownEvent(line, state, logTimeNum) {
+        state.isHardpointsDeployed := false
+        state.isShieldUp := false
+        state.isShieldWarningActive := false
+
+        if (state.currentState == "PowerCZ") {
+            state.currentState := "System"
+            state.powerEnemyFaction := ""
+            state.powerBodyName := "Unknown"
+        }
     }
 }
 
