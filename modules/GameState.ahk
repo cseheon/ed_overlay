@@ -54,7 +54,7 @@ class GameState {
 
     
     ; --- 현재 상태 정보 ---
-    commanderName := ""                   ; 현재 Commander 이름
+    commanderName := ""                 ; 현재 Commander 이름
     gameMode := ""                      ; 현재 게임 모드 (Open / Solo / PrivateGroup / Offline)
     totalCredits := 0                   ; 보유한 총 크레딧 수 (StatusReader에서 갱신)
     totalMerits := 0                    ; 보유한 총 Merit 수 (JournalReader에서 갱신)
@@ -81,8 +81,7 @@ class GameState {
 
     ; --- Mission Stack 상태 추가 ---
     isMissionStackActive := true
-    ; Structure: missionStack["FactionName"] := { killsLeft: 12, missions: Map(missionID, kills) }
-    missionStack := Map()
+        missionStack := Map()
 
     ; --- NavRoute (항로 정보) 상태 ---
     finalDestination := ""

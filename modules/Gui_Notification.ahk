@@ -6,7 +6,6 @@ class NotificationGui {
     static lblText := unset
     static paddingX := 80
     static paddingY := 10
-    ; static hideTimer := ObjBindMethod(NotificationGui, "Hide")
 
     static _blinkTimer := ObjBindMethod(NotificationGui, "OnBlinkTimer")
     static _blinkStartTick := 0

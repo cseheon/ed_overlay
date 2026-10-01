@@ -6,7 +6,6 @@ SetWorkingDir(A_ScriptDir)
 #Include "modules/Helper.ahk"
 #Include "modules/Gui_Notification.ahk"
 #Include "modules/GameState.ahk"
-#Include "modules/StatusReader.ahk"
 #Include "modules/Gui_Status.ahk"
 #Include "modules/Gui_NavRoute.ahk"
 #Include "modules/Gui_MissionStack.ahk"
