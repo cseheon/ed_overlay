@@ -133,24 +133,7 @@ class JournalParser {
     static OnKillEvent(line, state, logTimeNum) {
         ; 기존 FactionKillBond 처리 로직 수행
         if InStr(line, "FactionKillBond") {
-
-            /*
-            if (state.currentState != "PowerCZ") {
-                state.currentState := "PowerCZ"
-            }
-            if (state.powerEnemyFaction == "") {
-                victim := ExtractJsonVal(line, "VictimFaction")
-                if (victim != "")
-                    state.powerEnemyFaction := victim
-            }
-            if (state.powerStartTimeMarker != "") {
-                startNum := ParseJournalTimestamp(state.powerStartTimeMarker)
-                if (logTimeNum >= startNum) {
-                    state.powerKills++
-                    state.powerLastKillTime := state.powerElapsedSeconds
-                }
-            }
-            */
+            ; Power CZ 상태에서만 적의 팩션을 기록하고 세션 카운터를 반영
             if (state.currentState == "PowerCZ") {
                 if (state.powerEnemyFaction == "") {
                     victim := ExtractJsonVal(line, "VictimFaction")
@@ -417,26 +400,7 @@ class JournalParser {
     }
 
     static OnFactionKillBond(line, state, logTimeNum) {
-        /*
-        if (state.currentState != "PowerCZ") {
-            state.currentState := "PowerCZ"
-        }
-        
-        if (state.powerEnemyFaction == "") {
-            victim := ExtractJsonVal(line, "VictimFaction")
-            if (victim != "")
-                state.powerEnemyFaction := victim
-        }
-        
-        ; 세션 카운터 반영
-        if (state.powerStartTimeMarker != "") {
-            startNum := ParseJournalTimestamp(state.powerStartTimeMarker)
-            if (logTimeNum >= startNum) {
-                state.powerKills++
-                state.powerLastKillTime := state.powerElapsedSeconds
-            }
-        }
-        */
+        ; Power CZ 상태에서만 적의 팩션을 기록하고 세션 카운터를 반영
         if (state.currentState == "PowerCZ") {
             if (state.powerEnemyFaction == "") {
                 victim := ExtractJsonVal(line, "VictimFaction")

@@ -84,120 +84,65 @@ class StatusOverlayGui {
 
     static Update(state) {
         Critical
-        isChanged := false
+        isLeftChanged := false
+        isRightChanged := false
 
         if (state.currentState != this._lastState) {
             this._lastState := state.currentState
-            isChanged := true
+            isLeftChanged := true
         }
 
         if (state.starSystem != this._lastSystem) {
             SetTextAndResize(this.valSystem, state.starSystem != "" ? state.starSystem : "Unknown")
             this._lastSystem := state.starSystem
-            isChanged := true
+            isLeftChanged := true
         }
 
         if (state.dockedStationName != this._lastStation) {
             SetTextAndResize(this.valStation, state.dockedStationName != "" ? state.dockedStationName : "Unknown")
             this._lastStation := state.dockedStationName
-            isChanged := true
+            isLeftChanged := true
         }
 
         if (state.systemPower != this._lastPower) {
             SetTextAndResize(this.valPower, state.systemPower != "" ? state.systemPower : "None")
             this._lastPower := state.systemPower
-            isChanged := true
+            isLeftChanged := true
         }
 
         if (state.systemPowerState != this._lastPowerState) {
             SetTextAndResize(this.valPowerState, state.systemPowerState != "" ? state.systemPowerState : "Unoccupied")
             this._lastPowerState := state.systemPowerState
-            isChanged := true
+            isLeftChanged := true
         }
 
         if (state.TotalMerits != this._lastTotalMerits) {
             SetTextAndResize(this.valTotalMerits, FormatNumber(state.TotalMerits))
             this._lastTotalMerits := state.TotalMerits
-            isChanged := true
+            isRightChanged := true
         }
 
         if (state.totalCredits != this._lastCredits) {
             SetTextAndResize(this.valCredits, FormatNumber(state.totalCredits))
             this._lastCredits := state.totalCredits
-            isChanged := true
+            isRightChanged := true
         }
 
-        if (!isChanged)
-            return
+        if (isLeftChanged || isRightChanged) {
+            ; --- 좌측 정렬 처리
+            if (isLeftChanged)
+                this._UpdateLeftContentPosition()
 
-        ; --- 좌측 정렬 처리
-        baseLeft := 15
+            ; --- 우측 정렬 처리
+            if (isRightChanged)
+                this._UpdateRightContentPosition()
 
-        ; --- 시스템 위치
-        this.lblSystem.Move(baseLeft)
-        this.lblSystem.GetPos(&x, &y, &sw, &h)
-        baseLeft += sw + 10
-        this.valSystem.Move(baseLeft)
-        this.valSystem.GetPos(&x, &y, &sw, &h)
-        baseLeft += sw + 25
-
-        ; --- 파워세력 위치
-        this.lblPower.Move(baseLeft)
-        this.lblPower.GetPos(&x, &y, &sw, &h)
-        baseLeft += sw + 10
-        this.valPower.Move(baseLeft)
-        this.valPower.GetPos(&x, &y, &sw, &h)
-        baseLeft += sw + 25
-
-        ; --- 파워 상태 위치
-        this.lblPowerState.Move(baseLeft)
-        this.lblPowerState.GetPos(&x, &y, &sw, &h)
-        baseLeft += sw + 10
-        this.valPowerState.Move(baseLeft)
-        this.valPowerState.GetPos(&x, &y, &sw, &h)
-        baseLeft += sw + 25
-
-        if (state.currentState == "Docked") {
-            ; --- 스테이션 위치
-            this.lblStation.Move(baseLeft)
-            this.lblStation.GetPos(&x, &y, &sw, &h)
-            baseLeft += sw + 10
-            this.valStation.Move(baseLeft)
-            this.valStation.GetPos(&x, &y, &sw, &h)
-            baseLeft += sw + 25
-
-            this.lblStation.Visible := true
-            this.valStation.Visible := true
+            ; --- 도킹 상태에 따라 도킹 스테이션 정보 표시 여부 처리
+            this.lblStation.Visible := (state.currentState == "Docked")
+            this.valStation.Visible := (state.currentState == "Docked")
+                
+            WinRedraw(this.textGui.Hwnd)
         }
-        else {
-            this.lblStation.Visible := false
-            this.valStation.Visible := false
-        }
-
-
-        ; --- 우측 정렬 처리
-        right := this._guiW - 15
-
-        this.lblTotalMerits.GetPos(&x, &y, &meritLabelW, &meritLabelH)
-        this.valTotalMerits.GetPos(&x, &y, &meritValueW, &meritValueH)
-
-        right -= meritValueW
-        this.valTotalMerits.Move(right)
-        right -= 10 + meritLabelW
-        this.lblTotalMerits.Move(right)
-        right -= 25
-
-        ; --- Credit 정보 위치
-        this.lblCredits.GetPos(&x, &y, &creditLabelW, &creditLabelH)
-        this.valCredits.GetPos(&x, &y, &creditValueW, &creditValueH)
-
-        right -= creditValueW
-        this.valCredits.Move(right)
-        right -= 10 + creditLabelW
-        this.lblCredits.Move(right)
-        right -= 25
-
-        WinRedraw(this.textGui.Hwnd)
     }
 
     static Show() {
@@ -208,5 +153,44 @@ class StatusOverlayGui {
     static Hide() {
         this.bgGui.Hide()
         this.textGui.Hide()
+    }
+
+    ; --- 좌측 컨텐츠 위치 갱신
+    static _UpdateLeftContentPosition() {
+        controls := [this.lblSystem, this.valSystem, this.lblPower, this.valPower, this.lblPowerState, this.valPowerState, this.lblStation, this.valStation]
+        gaps := [8, 24, 8, 24, 8, 24, 8] ; 각 컨트롤 사이의 간격 (px)
+        x := 15
+
+        for index, control in controls {
+            control.GetPos(&oldX, &oldY, &controlW, &controlH)
+            control.Move(x, oldY)
+            x += controlW
+            if (index <= gaps.Length)
+                x += gaps[index]
+        }
+    }
+
+    ; --- 우측 컨텐츠 위치 갱신
+    static _UpdateRightContentPosition() {
+        controls := [this.lblCredits, this.valCredits,this.lblTotalMerits, this.valTotalMerits]
+        gaps := [8, 24, 8] ; 각 컨트롤 사이의 간격 (px)
+        totalW := 0
+
+        for control in controls {
+            control.GetPos(&oldX, &oldY, &controlW, &controlH)
+            totalW += controlW
+        }
+        for gap in gaps
+            totalW += gap
+
+        x := Floor(this._guiW - totalW) - 15
+
+        for index, control in controls {
+            control.GetPos(&oldX, &oldY, &controlW, &controlH)
+            control.Move(x, oldY)
+            x += controlW
+            if (index <= gaps.Length)
+                x += gaps[index]
+        }
     }
 }

@@ -44,16 +44,45 @@ class PowerCzOverlayGui {
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
         this.lblKills := this.textGui.Add("Text", "x170 y11", "KILLS")
         this.textGui.SetFont("s14 w700 Q5 cWhite", "Segoe UI")
-        this.valKills := this.textGui.Add("Text", "x+10 y6", "999")
+        this.valKills := this.textGui.Add("Text", "x+10 y6", "0")
         this.valKills.Value := "0"
 
         this.textGui.SetFont("s10 w700 Q5 c00ffff", "Consolas")
         this.lblMerits := this.textGui.Add("Text", "x250 y11", "MERITS")
         this.textGui.SetFont("s14 w700 Q5 cWhite", "Segoe UI")
-        this.valMerits := this.textGui.Add("Text", "x+10 y6", "99999")
+        this.valMerits := this.textGui.Add("Text", "x+10 y6", "0")
         this.valMerits.Value := "0"
 
         this.Hide()
+    }
+
+    static CenterMetrics() {
+        controls := [
+            this.lblTime, this.valTime,
+            this.lblKills, this.valKills,
+            this.lblMerits, this.valMerits
+        ]
+        gaps := [8, 24, 8, 24, 8]
+        totalW := 0
+
+        for control in controls {
+            control.GetPos(&oldX, &oldY, &controlW, &controlH)
+            totalW += controlW
+        }
+        for gap in gaps
+            totalW += gap
+
+        x := Floor((this.guiW - totalW) / 2)
+
+        for index, control in controls {
+            control.GetPos(&oldX, &oldY, &controlW, &controlH)
+            control.Move(x, oldY)
+            x += controlW
+            if (index <= gaps.Length)
+                x += gaps[index]
+        }
+
+        WinRedraw(this.textGui.Hwnd)
     }
 
     static Update(state) {
@@ -146,15 +175,24 @@ class PowerCzOverlayGui {
         secs := Mod(state.powerElapsedSeconds, 60)
         this.valTime.Value := Format("{1:02d}:{2:02d}", mins, secs)
 
+        isChanged := false
+
         if (this._lastKills != state.powerKills) {
-            this.valKills.Value := Format("{1}", state.powerKills)
+            SetTextAndResize(this.valKills, FormatNumber(state.powerKills))
+            ; this.valKills.Value := Format("{1}", state.powerKills)
             this._lastKills := state.powerKills
+            isChanged := true
         }
 
         if (this._lastMerits != state.powerMerits) {
-            this.valMerits.Value := Format("{1}", state.powerMerits)
+            SetTextAndResize(this.valMerits, FormatNumber(state.powerMerits))
+            ; this.valMerits.Value := Format("{1}", state.powerMerits)
             this._lastMerits := state.powerMerits
+            isChanged := true
         }
+
+        if (isChanged)
+            this.CenterMetrics()
     }
 
     ; --- 메리트 미터기 시작 / 일시정지
@@ -171,7 +209,7 @@ class PowerCzOverlayGui {
             this._isRunning := false
             SoundBeep(800, 100)
         }
-        this.UpdateDisplay(state)
+        this.Update(state)
     }
 
     ; --- 메리트 미터기 리셋
@@ -191,7 +229,7 @@ class PowerCzOverlayGui {
         state.ResetCZMetrics()
         SoundBeep(500, 100)
 
-        this.UpdateDisplay(state)
+        this.Update(state)
     }
 }
 

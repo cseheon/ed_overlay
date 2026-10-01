@@ -12,6 +12,7 @@ SetWorkingDir(A_ScriptDir)
 #Include "modules/Gui_ShieldWarning.ahk"
 #Include "modules/Gui_NavRoute.ahk"
 #Include "modules/Gui_MissionStack.ahk"
+#Include "modules/Gui_Indicator.ahk"
 #Include "modules/JournalReader.ahk"
 
 
@@ -54,6 +55,10 @@ NavRouteOverlayGui.Init()
 ; 미션 스택 GUI 초기화 (좌측 중앙 자동 배치) ---
 MissionStackOverlayGui.Init()
 
+; 인디케이터 GUI 초기화
+posY := A_ScreenHeight - 40
+IndicatorOverlayGui.Init(posY)
+
 ; --- 첫 렌더링 및 저널 스캔 ---
 StatusOverlayGui.Update(AppState)
 JournalReader.FindLatestLogFile(LogDir, AppState)
@@ -74,6 +79,7 @@ OnUiTimer() {
     PowerCzOverlayGui.Update(AppState)
     NavRouteOverlayGui.Update(AppState)
     MissionStackOverlayGui.Update(AppState)
+    IndicatorOverlayGui.Update(AppState)
 }
 
 
@@ -157,4 +163,10 @@ F9::
     ; AppState.currentState := "PowerCZ"
 
     ShieldWarningGui.Show()
+}
+
+F10::
+{
+    AppState.currentState := "PowerCZ"
+    
 }
