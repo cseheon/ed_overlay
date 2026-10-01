@@ -1,6 +1,8 @@
 ﻿#Requires AutoHotkey v2.0
 
 class StatusOverlayGui {
+    static isShow := false
+
     static lableGap := 8
     static valueGap := 24
 
@@ -56,7 +58,7 @@ class StatusOverlayGui {
             this._items.Push(item)
         }
 
-        this.Show()
+        ; this.Show()
     }
 
     static Update(state) {
@@ -90,11 +92,13 @@ class StatusOverlayGui {
     }
 
     static Show() {
+        this.isShow := true
         this._bgGui.Show(Format("x{1} y{2} w{3} h{4} NoActivate", this._posX, this._posY, this._guiW, this._guiH))
         this._textGui.Show(Format("x{1} y{2} w{3} h{4} NoActivate", this._posX, this._posY, this._guiW, this._guiH))
     }
 
     static Hide() {
+        this.isShow := false
         this._bgGui.Hide()
         this._textGui.Hide()
     }

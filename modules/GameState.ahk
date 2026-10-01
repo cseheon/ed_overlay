@@ -95,6 +95,10 @@ class GameState {
     totalActiveMissions := 0
     missionStackData := [] ; [{ factionName: "", killsLeft: 0 }, ...]
 
+    ; --- GUI 제어
+    isOverlayVisible := true
+    overlayVisibilityBeforeHide := Map()
+
     ResetCZMetrics() {
         this.powerStartTimeMarker := ""
         this.powerElapsedSeconds := 0
@@ -105,4 +109,6 @@ class GameState {
         this.powerInitTotalMerits := 0
         this.powerEnemyFaction := ""
     }
+
+    
 }

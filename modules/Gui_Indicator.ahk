@@ -1,6 +1,8 @@
 ﻿#Requires AutoHotkey v2.0
 
 class IndicatorOverlayGui {
+    static isShow := false
+
     static _textGui := unset
     static _items := []
     static _lastStates := Map()
@@ -61,6 +63,7 @@ class IndicatorOverlayGui {
         }
 
         this._textGui.Show(Format("x0 y{} w{} h{} NoActivate", posY, screenW, this._height))
+        this.isShow := true
 
         DllCall(
             "SetWindowPos",
@@ -72,7 +75,7 @@ class IndicatorOverlayGui {
     }
 
     static Update(state) {
-        changed := false
+        isChanged := false
 
         for item in this._items {
             isActive := state.%item.key%
@@ -87,10 +90,27 @@ class IndicatorOverlayGui {
             item.control.SetFont("c" . foreground, "Consolas")
             item.bgGui.BackColor := background
             WinRedraw(item.bgGui.Hwnd)
-            changed := true
+            isChanged := true
         }
 
-        if changed
+        if (isChanged)
             WinRedraw(this._textGui.Hwnd)
     }
+
+    static Show() {
+        this.isShow := true
+        for item in this._items {
+            item.bgGui.Show("NoActivate")
+        }
+        this._textGui.Show("NoActivate")
+    }
+
+    static Hide() {
+        this.isShow := false
+        this._textGui.Hide()
+        for item in this._items {
+            item.bgGui.Hide()
+        }
+    }
+
 }

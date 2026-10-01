@@ -1,6 +1,8 @@
 ﻿#Requires AutoHotkey v2.0
 
 class MissionStackOverlayGui {
+    static isShow := false
+
     static bgGui := unset
     static textGui := unset
     static lblTitle := unset
@@ -149,16 +151,20 @@ class MissionStackOverlayGui {
             this.itemCtrls[idx].kills.Visible := false
         }
 
-        this.Show()
-        WinRedraw(this.textGui.Hwnd)
+        if (state.isOverlayVisible) {
+            this.Show()
+            WinRedraw(this.textGui.Hwnd)
+        }
     }
 
     static Show() {
+        this.isShow := true
         this.bgGui.Show(Format("x{1} y{2} w{3} h{4} NoActivate", this.posX, this.posY, this.guiW, this.guiH))
         this.textGui.Show(Format("x{1} y{2} w{3} h{4} NoActivate", this.posX, this.posY, this.guiW, this.guiH))
     }
 
     static Hide() {
+        this.isShow := false
         this.bgGui.Hide()
         this.textGui.Hide()
     }

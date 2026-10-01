@@ -13,6 +13,8 @@ SetWorkingDir(A_ScriptDir)
 #Include "modules/JournalReader.ahk"
 
 
+
+
 ; --- 설정 및 단일 상태 인스턴스 생성 ---
 iniPath := A_ScriptDir . "\config.ini"
 defaultLogDir := EnvGet("USERPROFILE") . "\Saved Games\Frontier Developments\Elite Dangerous"
@@ -30,6 +32,7 @@ pos1X := 0
 pos1Y := Integer(IniRead(iniPath, "GuiStatus", "Y", "20"))
 gui1W := A_ScreenWidth
 gui1H := Integer(IniRead(iniPath, "GuiStatus", "Height", "38"))
+
 StatusOverlayGui.Init(pos1X, pos1Y, gui1W, gui1H)
 
 ; 점프 경로 GUI 위치 및 너비 설정 (우측 중앙 자동 배치) ---
@@ -42,11 +45,13 @@ MissionStackOverlayGui.Init()
 posY := A_ScreenHeight - 40
 IndicatorOverlayGui.Init(posY)
 
-; --- 첫 렌더링 및 저널 스캔 ---
-StatusOverlayGui.Update(AppState)
-JournalReader.FindLatestLogFile(LogDir, AppState)
-
 Voice.Init()
+
+; --- 첫 렌더링 및 저널 스캔 ---
+
+JournalReader.FindLatestLogFile(LogDir, AppState)
+StatusOverlayGui.Update(AppState)
+StatusOverlayGui.Show()
 
 ; --- 타이머 등록 ---
 SetTimer(OnLogTimer, readInterval)
@@ -55,11 +60,19 @@ SetTimer(OnUiTimer, uiInterval)
 OnLogTimer() {
     JournalReader.ReadTask(LogDir, AppState)
     StatusReader.ReadTask(LogDir, AppState)
+
+    if(AppState.isOverlayVisible) {
+        if (AppState.isGalaxyMapOpened || AppState.isSystemMapOpened)
+            HideGUI()
+    }
+    else {
+        if (AppState.isGalaxyMapOpened == false && AppState.isSystemMapOpened == false)
+            ShowGUI()
+    }
 }
 
 OnUiTimer() {
     StatusOverlayGui.Update(AppState)
-    ; PowerCzOverlayGui.Update(AppState)
     NavRouteOverlayGui.Update(AppState)
     MissionStackOverlayGui.Update(AppState)
     IndicatorOverlayGui.Update(AppState)
@@ -136,16 +149,47 @@ F8::
     NavRouteOverlayGui.Update(AppState)
 }
 
+ShowGUI() {
+    if (AppState.isOverlayVisible)
+        return
+
+    AppState.isOverlayVisible := true
+
+    if (AppState.overlayVisibilityBeforeHide["status"])
+        StatusOverlayGui.Show()
+    if (AppState.overlayVisibilityBeforeHide["route"])
+        NavRouteOverlayGui.Show()
+    if (AppState.overlayVisibilityBeforeHide["mission"])
+        MissionStackOverlayGui.Show()
+    if (AppState.overlayVisibilityBeforeHide["indicator"])
+        IndicatorOverlayGui.Show()
+}
+
+HideGUI() {
+    if (!AppState.isOverlayVisible)
+        return
+
+    AppState.overlayVisibilityBeforeHide := Map(
+        "status", StatusOverlayGui.isShow,
+        "route", NavRouteOverlayGui.isShow,
+        "mission", MissionStackOverlayGui.isShow,
+        "indicator", IndicatorOverlayGui.isShow
+    )
+
+    AppState.isOverlayVisible := false
+
+    StatusOverlayGui.Hide()
+    NavRouteOverlayGui.Hide()
+    MissionStackOverlayGui.Hide()
+    IndicatorOverlayGui.Hide()
+}
+
 F9:: 
 {
-    ; --- TEST: 팝업 알림창 ---
-    ; ShowNotice("Power Conflict Zone !!")
-    ; ShowWarning("[ Shields offline ! ]", 3000, "Warning. Shields offline.")
+   ShowGUI()
 }
 
 F10::
 {
-    ; --- TEST: Power CZ 메리트 미터기
-    AppState.currentState := "PowerCZ"
-    
+   HideGUI()
 }
