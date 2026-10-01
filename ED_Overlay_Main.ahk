@@ -8,8 +8,6 @@ SetWorkingDir(A_ScriptDir)
 #Include "modules/GameState.ahk"
 #Include "modules/StatusReader.ahk"
 #Include "modules/Gui_Status.ahk"
-; #Include "modules/Gui_PowerCZ.ahk"
-#Include "modules/Gui_ShieldWarning.ahk"
 #Include "modules/Gui_NavRoute.ahk"
 #Include "modules/Gui_MissionStack.ahk"
 #Include "modules/Gui_Indicator.ahk"
@@ -34,22 +32,6 @@ pos1Y := Integer(IniRead(iniPath, "GuiStatus", "Y", "20"))
 gui1W := A_ScreenWidth
 gui1H := Integer(IniRead(iniPath, "GuiStatus", "Height", "38"))
 StatusOverlayGui.Init(pos1X, pos1Y, gui1W, gui1H)
-
-/*
-gui2W := Integer(IniRead(iniPath, "GuiPowerCZ", "Width", "400"))
-gui2H := Integer(IniRead(iniPath, "GuiPowerCZ", "Height", "38"))
-pos2X := (A_ScreenWidth - gui2W) / 2
-pos2Y := Integer(IniRead(iniPath, "GuiPowerCZ", "Y", "20"))
-PowerCzOverlayGui.Init(pos2X, pos2Y, gui2W, gui2H)
-*/
-
-; 방어막 경고 패널 초기화
-guiW := Integer(IniRead(iniPath, "ShieldWarning", "Width", "400"))
-guiH := Integer(IniRead(iniPath, "ShieldWarning", "Height", "40"))
-posX := Integer(IniRead(iniPath, "ShieldWarning", "X", (A_ScreenWidth - guiW) / 2))
-posY := Integer(IniRead(iniPath, "ShieldWarning", "Y", A_ScreenWidth / 7))
-duration := Integer(IniRead(iniPath, "ShieldWarning", "Duration", "5"))
-ShieldWarningGui.Init(posX, posY, guiW, guiH, duration)
 
 ; 점프 경로 GUI 위치 및 너비 설정 (우측 중앙 자동 배치) ---
 NavRouteOverlayGui.Init()
@@ -94,7 +76,6 @@ OnUiTimer() {
 {
     ; Power CZ 오버레이 시작 / 일시정지
     StatusOverlayGui.StartPowerCZTimer(AppState)
-    ; PowerCzOverlayGui.StartMeritsMeter(AppState)
 }
 
 ; Win + F6 : PowerCZ 전체 리셋 
@@ -102,7 +83,6 @@ OnUiTimer() {
 {
     ; Power CZ 오버레이 리셋
     StatusOverlayGui.ResetPowerCZTimer(AppState)
-    ; PowerCzOverlayGui.ResetMeritsMeter(AppState)
 }
 
 
@@ -159,14 +139,14 @@ F8::
 
 F9:: 
 {
-    ; --- TEST: Power CZ 메리트 미터기 
-    ; AppState.currentState := "PowerCZ"
-
-    ShieldWarningGui.Show()
+    ; --- TEST: 팝업 알림창 ---
+    ; ShowNotice("Power Conflict Zone !!")
+    ; ShowWarning("[ Shields offline ! ]", 3000, "Warning. Shields offline.")
 }
 
 F10::
 {
+    ; --- TEST: Power CZ 메리트 미터기
     AppState.currentState := "PowerCZ"
     
 }

@@ -202,8 +202,7 @@ class JournalParser {
 
             ; On -> Off 로 전환된 순간에만 경고 작동
             if (state.isShieldUp && !isUp) {
-                state.isShieldWarningActive := true
-                ShieldWarningGui.Show()
+                ShowWarning("[ Shields offline ! ]", 3000, "Warning. Shields offline.")
             }
 
             state.isShieldUp := isUp
@@ -453,7 +452,6 @@ class JournalParser {
     static OnShutdownEvent(line, state, logTimeNum) {
         state.isHardpointsDeployed := false
         state.isShieldUp := false
-        state.isShieldWarningActive := false
 
         if (state.currentState == "PowerCZ") {
             state.currentState := "System"
