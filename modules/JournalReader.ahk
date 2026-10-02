@@ -179,7 +179,7 @@ class JournalParser {
         target := ExtractJsonVal(line, "VictimFaction")
         if(target == "You") {
             ; 공격 당함
-            ShowWarning("Under Attack !", 1000, "Under Attack")
+            ShowWarning("Under Attack !", 1000, "함선이 공격받고 있습니다.")
         }
     }
 
@@ -281,12 +281,19 @@ class JournalParser {
         if RegExMatch(line, '"Population":(\d+)', &populationMatch)
             state.systemPopulation := Integer(populationMatch[1])
 
-        state.dockedStationName := ""
+        ; 'Docked' 정보가 있고 true 이면, StationName 을 갱신
+        isDocked := ExtractJsonBool(line, "Docked")
+        if (isDocked) {
+            state.dockedStationName := ExtractJsonVal(line, "StationName")
+            state.currentState := "Docked"
+        }
+        else {
+            state.dockedStationName := ""
+            if (state.currentState != "PowerCZ")
+                state.currentState := "System"
+        }
+
         state.powerBodyName := ""
-
-        if (state.currentState != "PowerCZ")
-            state.currentState := "System"
-
 
         if RegExMatch(line, '"FuelLevel"\s*:\s*([\d.]+)', &fuelMatch)
             this.SetCurrentFuel(state, Number(fuelMatch[1]))

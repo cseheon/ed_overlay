@@ -33,7 +33,7 @@ MissionStackOverlayGui.Init()
 ; 인디케이터 GUI 초기화 (화면 하단)
 IndicatorOverlayGui.Init(A_ScreenHeight - 40)
 ; 음성 모듈 초기화
-Voice.Init()
+Voice.Init(Voice.voiceAva)
 
 ; --- 첫 렌더링 및 저널 스캔 ---
 
@@ -58,6 +58,11 @@ OnUiTimer() {
     NavRouteOverlayGui.Update(AppState)
     MissionStackOverlayGui.Update(AppState)
     IndicatorOverlayGui.Update(AppState)
+}
+
+; 각종 상태에 따라 적절한 알림 메시지 표시
+UpdateStatus() {
+
 }
 
 
@@ -133,10 +138,14 @@ F8::
 
 F9:: 
 {
-   ShowWarning("Under Attack !", 1000, "함장님. 이 성계는 적세력이 점령중입니다. 주의가 필요합니다.")
+   ; ShowWarning("Under Attack !", 1000, "Warning! 이 성계는 적세력이 점령중입니다. 주의가 필요합니다.")
+   ShowWarning("Under Attack !", 2000, "Under Attack")
 }
 
 F10::
 {
-    ; Voice.SpeakVoicesPeriodically()
+    ; TEST: Power CZ
+    AppState.currentState := "PowerCZ"
+    AppState.powerEnemyFaction := "Some Faction"
+    StatusOverlayGui.StartPowerCZTimer(AppState)
 }

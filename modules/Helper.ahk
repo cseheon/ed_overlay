@@ -4,17 +4,14 @@ class Voice {
     static tts := unset
     static SSPF_ASYNC := 1
 
-    /*
-    Microsoft Ana Online (Natural) - English (United States)-- -----------------------------아이 목소리
-    Microsoft AvaMultilingual Online (Natural) - English (United States)-- -------------------약간 까불이 느낌이 살짝
-    Microsoft EmmaMultilingual Online (Natural) - English (United States)-- ----------------볼륨이 크고 또렷한
-    Microsoft Emma Online (Natural) - English (United States)-- -------------------------위와 비슷
-    Microsoft HyunsuMultilingual Online (Natural) - Korean (Korea)-- -----------자연스러움
-    Microsoft InJoon Online (Natural) - Korean (Korea)-- ------------자연스럽고 약간 진지함
-    Microsoft SunHi Online (Natural) - Korean (Korea)
-    */
+   static voiceAna := "Ana Online" ; English (United States) 아이 목소리
+   static voiceAva := "AvaMultilingual Online" ; English (United States) 약간 까불이 느낌이 살짝
+   static voiceEmma := "EmmaMultilingual Online" ; English (United States) 볼륨이 크고 또렷한
+   static voiceHyunsu := "HyunsuMultilingual Online" ; Korean (Korea) 자연스러움
+   static voiceInJoon := "InJoon Online" ; Korean (Korea) 자연스럽고 약간 진지함
+   static voiceSunHi := "SunHi Online" ; Korean (Korea)
 
-    static Init(voiceName := "AvaMultilingual Online") {
+    static Init(voiceName := this.voiceAva) {
         this.tts := ComObject("SAPI.SpVoice")
         voices := this.tts.GetVoices()
         Loop voices.Count {
@@ -34,8 +31,62 @@ class Voice {
 }
 
 
+
+class Logger {
+    static SaveLogToJSON(state) {
+        logFilePath := A_ScriptDir . "\PowerCZ_Log.json"
+        nowStr := FormatTime(A_Now, "yyyy-MM-dd HH:mm:ss")
+
+        mins := Floor(state.powerLastKillTime / 60)
+        secs := Mod(state.powerLastKillTime, 60)
+        elapsedStr := Format("{1:02d}:{2:02d}", mins, secs)
+        ppm := (state.powerLastKillTime > 0) ? Round((state.powerMerits / state.powerLastKillTime) * 60, 1) : 0.0
+
+        startTotal := (state.powerInitTotalMerits > 0) ? state.powerInitTotalMerits : state.totalMerits
+        endTotal := state.totalMerits
+
+        jsonEntry := Format(
+            '  {`n' .
+            '    "timestamp": "{1}",`n' .
+            '    "initial_total_merits": {2},`n' .
+            '    "final_total_merits": {3},`n' .
+            '    "elapsed_time": "{4}",`n' .
+            '    "kill_count": {5},`n' .
+            '    "session_merits": {6},`n' .
+            '    "ppm": {7}`n' .
+            '  }',
+            nowStr, startTotal, endTotal, elapsedStr, state.powerKills, state.powerMerits, ppm
+        )
+
+        if (!FileExist(logFilePath)) {
+            fileContent := "[`n" . jsonEntry . "`n]"
+            FileAppend(fileContent, logFilePath, "UTF-8")
+        } else {
+            existingText := FileRead(logFilePath, "UTF-8")
+            existingText := RTrim(existingText, " `r`n]")
+            updatedText := existingText . ",`n" . jsonEntry . "`n]"
+            f := FileOpen(logFilePath, "w", "UTF-8")
+            f.Write(updatedText)
+            f.Close()
+        }
+    }
+}
+
+
+
+; 숫자를 입력받아 천 단위마다 콤마를 추가하여 반환
 FormatNumber(num) {
     return RegExReplace(num, "(\d)(?=(\d{3})+$)", "$1,")
+}
+
+
+; 숫자를 입력받아 백만 단위 이상이면 "X.X M" 형식으로 반환하고, 십억 단위 이상이면 "X.X B" 형식으로 반환
+FormatCompactNumber(num) {
+    if (num >= 1000000000)
+        return Format("{1:.1f} B", num / 1000000000)
+    if (num >= 1000000)
+        return Format("{1:.1f} M", num / 1000000)
+    return num
 }
 
 ExtractJsonVal(json, key) {
@@ -46,6 +97,12 @@ ExtractJsonVal(json, key) {
     return ""
 }
 
+ExtractJsonBool(json, key) {
+    if RegExMatch(json, '"' . key . '"\s*:\s*(true|false)\b', &match)
+        return (match[1] == "true")
+    return false
+}
+
 ExtractJournalEnumVal(json, key) {
     value := ExtractJsonVal(json, key)
     if (value == "")
@@ -54,7 +111,8 @@ ExtractJournalEnumVal(json, key) {
     value := RegExReplace(value, "^\$")
     value := RegExReplace(value, ";$")
     value := RegExReplace(value, "^.*_")
-    return StrUpper(value)
+    ; return StrUpper(value)
+    return StrUpper(SubStr(value, 1, 1)) . SubStr(value, 2)
 }
 
 ParseJournalTimestamp(isoStr) {

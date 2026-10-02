@@ -17,18 +17,18 @@ class StatusOverlayGui {
     static _items := []
     static _lastStates := Map()
     static _definitions := [
-        { label: "STSTEM", key: "starSystem", value: "Unknown", align: "left", visible:true }, 
-        { label: "POPULATION", key: "systemPopulation", value: 0, align: "left", visible: true },
-        { label: "SECURITY", key: "systemSecurity", value: "Unknown", align: "left", visible: true },
-        { label: "SYSTEM POWER", key: "systemPower", value: "Unknown", align: "left", visible:true }, 
-        { label: "POWER STATE", key: "systemPowerState", value: "Unknown", align: "left", visible:true }, 
-        { label: "DOCKED", key: "dockedStationName", value: "Unknown", align: "left", visible:true }, 
-        { label: "POWER CONFLICT", key: "powerEnemyFaction", value: "Unknown", align: "left", visible:true }, 
-        { label: "TIME", key: "", value: "00:00", align: "center", visible:true }, 
-        { label: "KILLS", key: "powerKills", value: 0, align: "center", visible:true }, 
-        { label: "CZ MERITS", key: "powerMerits", value: 0, align: "center", visible: true },
-        { label: "MERITS", key: "totalMerits", value: 0, align: "right", visible:true }, 
-        { label: "CREDITS", key: "totalCredits", value: 0, align: "right", visible:true }]
+        { label: "STSTEM", key: "starSystem", value: "Unknown", align: "left", visible:true, type: "text" }, 
+        { label: "POPULATION", key: "systemPopulation", value: 0, align: "left", visible: true, type: "compact" },
+        { label: "SECURITY", key: "systemSecurity", value: "Unknown", align: "left", visible: true, type: "text" },
+        { label: "SYSTEM POWER", key: "systemPower", value: "Unknown", align: "left", visible:true, type: "text" }, 
+        { label: "POWER STATE", key: "systemPowerState", value: "Unknown", align: "left", visible:true, type: "text" }, 
+        { label: "DOCKED", key: "dockedStationName", value: "Unknown", align: "left", visible:true, type: "text" }, 
+        { label: "POWER CONFLICT", key: "powerEnemyFaction", value: "Unknown", align: "left", visible:true, type: "text" }, 
+        { label: "TIME", key: "", value: "00:00", align: "center", visible:true, type: "text" }, 
+        { label: "KILLS", key: "powerKills", value: 0, align: "center", visible:true, type: "number" }, 
+        { label: "CZ MERITS", key: "powerMerits", value: 0, align: "center", visible: true, type: "number" },
+        { label: "MERITS", key: "totalMerits", value: 0, align: "right", visible:true, type: "number" }, 
+        { label: "CREDITS", key: "totalCredits", value: 0, align: "right", visible:true, type: "number" }]
 
     static Init(posY := 20) {
         this._posX := 0
@@ -75,8 +75,12 @@ class StatusOverlayGui {
                 continue
 
             newValue := state.%item.key%
-            if (IsInteger(newValue))
-                newValue := FormatNumber(newValue)
+            if (IsInteger(newValue)) {
+                if (item.type == "compact")
+                    newValue := FormatCompactNumber(newValue)
+                else 
+                    newValue := FormatNumber(newValue)
+            }
 
             if (this._lastStates.Has(item.key) && this._lastStates[item.key] == newValue)
                 continue
@@ -182,6 +186,7 @@ class StatusOverlayGui {
         isChanged := false
         for item in this._definitions {
             switch item.label {
+                /*
                 case "TIME", "KILLS", "CZ MERITS":
                     if (item.visible != this._timerActive) {
                         item.visible := this._timerActive
@@ -189,6 +194,8 @@ class StatusOverlayGui {
                         item.valueControl.Visible := item.visible
                         isChanged := true
                     }
+                
+                */
                 case "DOCKED":
                     docVisible := (state.currentState == "Docked")
                     if (item.visible != docVisible) {
@@ -197,7 +204,7 @@ class StatusOverlayGui {
                         item.valueControl.Visible := item.visible
                         isChanged := true
                     }
-                case "POWER CONFLICT":
+                case "POWER CONFLICT", "TIME", "KILLS", "CZ MERITS":
                     czVisible := (state.currentState == "PowerCZ")
                     if (item.visible != czVisible) {
                         item.visible := czVisible
@@ -272,48 +279,6 @@ class StatusOverlayGui {
                 item.labelControl.Move(rightX, oldY)
                 rightX -= this.valueGap
             }
-        }
-    }
-}
-
-
-
-class Logger {
-    static SaveLogToJSON(state) {
-        logFilePath := A_ScriptDir . "\PowerCZ_Log.json"
-        nowStr := FormatTime(A_Now, "yyyy-MM-dd HH:mm:ss")
-
-        mins := Floor(state.powerLastKillTime / 60)
-        secs := Mod(state.powerLastKillTime, 60)
-        elapsedStr := Format("{1:02d}:{2:02d}", mins, secs)
-        ppm := (state.powerLastKillTime > 0) ? Round((state.powerMerits / state.powerLastKillTime) * 60, 1) : 0.0
-
-        startTotal := (state.powerInitTotalMerits > 0) ? state.powerInitTotalMerits : state.totalMerits
-        endTotal := state.totalMerits
-
-        jsonEntry := Format(
-            '  {`n' .
-            '    "timestamp": "{1}",`n' .
-            '    "initial_total_merits": {2},`n' .
-            '    "final_total_merits": {3},`n' .
-            '    "elapsed_time": "{4}",`n' .
-            '    "kill_count": {5},`n' .
-            '    "session_merits": {6},`n' .
-            '    "ppm": {7}`n' .
-            '  }',
-            nowStr, startTotal, endTotal, elapsedStr, state.powerKills, state.powerMerits, ppm
-        )
-
-        if (!FileExist(logFilePath)) {
-            fileContent := "[`n" . jsonEntry . "`n]"
-            FileAppend(fileContent, logFilePath, "UTF-8")
-        } else {
-            existingText := FileRead(logFilePath, "UTF-8")
-            existingText := RTrim(existingText, " `r`n]")
-            updatedText := existingText . ",`n" . jsonEntry . "`n]"
-            f := FileOpen(logFilePath, "w", "UTF-8")
-            f.Write(updatedText)
-            f.Close()
         }
     }
 }
