@@ -22,9 +22,12 @@
 
 
 class GameState {
+    ; 맵이 열려있는지 확인
+    isMapOpened => (this.isGalaxyMapOpened || this.isSystemMapOpened)
+
     ; --- 시스템 및 저널 상태 ---
     currentLogFile := ""
-    currentState := "" ; System / Docked / PowerCZ
+    currentState := "" ; System / Docked / PowerCZ / GalaxyMap / SystemMap
 
     ; --- 성계 시스템 정보 상태 ---
     starSystem := "Unknown"
@@ -95,9 +98,7 @@ class GameState {
     totalActiveMissions := 0
     missionStackData := [] ; [{ factionName: "", killsLeft: 0 }, ...]
 
-    ; --- GUI 제어
-    isOverlayVisible := true
-    overlayVisibilityBeforeHide := Map()
+    
 
     ResetCZMetrics() {
         this.powerStartTimeMarker := ""

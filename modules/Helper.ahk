@@ -1,18 +1,25 @@
 ﻿#Requires AutoHotkey v2.0
 
 class Voice {
-    ; Microsoft David Desktop
-    ; Microsoft Zira Desktop
-    ; Microsoft ZHeami Desktop
     static tts := unset
     static SSPF_ASYNC := 1
 
-    static Init() {
+    /*
+    Microsoft Ana Online (Natural) - English (United States)-- -----------------------------아이 목소리
+    Microsoft AvaMultilingual Online (Natural) - English (United States)-- -------------------약간 까불이 느낌이 살짝
+    Microsoft EmmaMultilingual Online (Natural) - English (United States)-- ----------------볼륨이 크고 또렷한
+    Microsoft Emma Online (Natural) - English (United States)-- -------------------------위와 비슷
+    Microsoft HyunsuMultilingual Online (Natural) - Korean (Korea)-- -----------자연스러움
+    Microsoft InJoon Online (Natural) - Korean (Korea)-- ------------자연스럽고 약간 진지함
+    Microsoft SunHi Online (Natural) - Korean (Korea)
+    */
+
+    static Init(voiceName := "AvaMultilingual Online") {
         this.tts := ComObject("SAPI.SpVoice")
         voices := this.tts.GetVoices()
         Loop voices.Count {
             voice := voices.Item(A_Index - 1)
-            if InStr(voice.GetDescription(), "Microsoft Zira Desktop") {
+            if InStr(voice.GetDescription(), voiceName) {
                 this.tts.Voice := voice
                 break
             }
@@ -46,7 +53,8 @@ ExtractJournalEnumVal(json, key) {
 
     value := RegExReplace(value, "^\$")
     value := RegExReplace(value, ";$")
-    return RegExReplace(value, "^.*_")
+    value := RegExReplace(value, "^.*_")
+    return StrUpper(value)
 }
 
 ParseJournalTimestamp(isoStr) {
@@ -89,12 +97,6 @@ ParseColor(color) {
     strColor := Trim(String(color))
     strColor := RegExReplace(strColor, "^#", "")
 
-    ; 2. 앞 2글자가 '0x' 또는 '0X'가 아니라면 접두사 붙이기
-    /*
-    if (StrCompare(SubStr(strColor, 1, 2), "0x", true) != 0 && SubStr(strColor, 1, 2) != "0X") {
-        strColor := "0x" . strColor
-    }
-    */
     ; '0x' 또는 '0X' 접두사가 없다면 붙여서 16진수로 명시적 변환
     if (!RegExMatch(strColor, "i)^0x")) {
         strColor := "0x" . strColor
@@ -145,9 +147,6 @@ PingPongColor(colorA, colorB, t) {
     cA := ParseColor(colorA)
     cB := ParseColor(colorB)
 
-    ; Mathf.PingPong 원리: t를 0.0 ~ 2.0 범위로 복사 후 1.0 중심으로 대칭 변환
-    ; t가 0.0 -> 1.0 : pingt = 0.0 -> 1.0 (A에서 B로)
-    ; t가 1.0 -> 2.0 : pingt = 1.0 -> 0.0 (B에서 A로)
     pingt := 1.0 - Abs(Mod(t, 2.0) - 1.0)
 
     ; RGB 채널 분리

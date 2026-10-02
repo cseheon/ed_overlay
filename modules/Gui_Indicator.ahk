@@ -95,6 +95,18 @@ class IndicatorOverlayGui {
 
         if (isChanged)
             WinRedraw(this._textGui.Hwnd)
+
+        ; 갤럭시 맵 또는 시스템 맵이 열려 있는 경우 GUI를 숨기고, 그렇지 않으면 표시한다.
+        if (this.isShow) {
+            if (state.isMapOpened) {
+                this.Hide()
+            }
+        }
+        else {
+            if (!(state.isMapOpened)) {
+                this.Show()
+            }
+        }
     }
 
     static Show() {

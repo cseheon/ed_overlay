@@ -7,6 +7,8 @@ class JournalParser {
         "Music", ObjBindMethod(JournalParser, "OnMusicEvent"),
         "FSDJump", ObjBindMethod(JournalParser, "OnFSDJump"),
         "Location", ObjBindMethod(JournalParser, "OnLocationEvent"),
+        "CarrierLocation", ObjBindMethod(JournalParser, "OnCarrierLocationEvent"),
+        "CarrierJump", ObjBindMethod(JournalParser, "OnCarrierJumpEvent"),
         "Docked", ObjBindMethod(JournalParser, "OnDocked"),
         "Undocked", ObjBindMethod(JournalParser, "OnUndocked"),
         "SupercruiseDestinationDrop", ObjBindMethod(JournalParser, "OnSupercruiseDestinationDrop"),
@@ -15,6 +17,7 @@ class JournalParser {
         "PowerplayMerits", ObjBindMethod(JournalParser, "OnPowerplayMerits"),
         "FactionKillBond", ObjBindMethod(JournalParser, "OnKillEvent"),
         "Bounty", ObjBindMethod(JournalParser, "OnKillEvent"),
+        "UnderAttack", ObjBindMethod(JournalParser, "OnUnderAttackEvent"),
         "Missions", ObjBindMethod(JournalParser, "OnMissions"),
         "MissionAccepted", ObjBindMethod(JournalParser, "OnMissionAccepted"),
         "MissionCompleted", ObjBindMethod(JournalParser, "OnMissionCompleted"),
@@ -171,6 +174,15 @@ class JournalParser {
         }
     }
 
+    ; 공격을 당했을때
+    static OnUnderAttackEvent(line, state, logTimeNum) {
+        target := ExtractJsonVal(line, "VictimFaction")
+        if(target == "You") {
+            ; 공격 당함
+            ShowWarning("Under Attack !", 1000, "Under Attack")
+        }
+    }
+
     ; 헬퍼 함수: 미션 추가 및 재계산
     static AddMissionToStack(state, faction, missionID, kills) {
         if (!state.missionStack.Has(faction)) {
@@ -227,10 +239,27 @@ class JournalParser {
         this.OnLocationEvent(line, state, logTimeNum)
     }
 
+    ; --- 캐리어 위치 정보 갱신
+    ; "event":"CarrierLocation", "CarrierType":"FleetCarrier", "CarrierID":3701841408, "StarSystem":"Skoll", "SystemAddress":18263140345313, "BodyID":24 }
+    static OnCarrierLocationEvent(line, state, logTimeNum) {
+        state.starSystem := ExtractJsonVal(line, "StarSystem")
+        state.systemPower := "Unknown"
+        state.systemPowerState := "Unknown"
+        state.systemAllegiance := "Unknown"
+        state.systemGovernment := "Unknown"
+        state.systemSecurity := "Unknown"
+        state.systemEconomy := "Unknown"
+    }
+
+    ; --- 캐리어 점프
+    static OnCarrierJumpEvent(line, state, logTimeNum) {
+        this.OnLocationEvent(line, state, logTimeNum)
+    }
+
     ; --- 위치정보 갱신
     static OnLocationEvent(line, state, logTimeNum) {
         state.starSystem := ExtractJsonVal(line, "StarSystem")
-        state.systemPower := ExtractJsonVal(line, "Powers")
+        state.systemPower := ExtractJsonVal(line, "ControllingPower")
         state.systemPowerState := ExtractJsonVal(line, "PowerplayState")
         state.systemAllegiance := ExtractJsonVal(line, "SystemAllegiance")
         state.systemGovernment := ExtractJournalEnumVal(line, "SystemGovernment")

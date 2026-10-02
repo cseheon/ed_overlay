@@ -17,6 +17,7 @@ class NavRouteOverlayGui {
 
     static _lastJumps := -1
     static _lastFuel := -1
+    static _lastSnapshot := ""
 
     static Init(w := 340) {
         this.guiW := w
@@ -54,6 +55,41 @@ class NavRouteOverlayGui {
             return
         }
 
+        snapshot := this._BuildSnapshot(state)
+        if (snapshot != this._lastSnapshot) {
+            this._lastSnapshot := snapshot
+            this._UpdateRoute(state)
+        }
+
+        ; 갤럭시 맵 또는 시스템 맵이 열려 있는 경우 GUI를 숨기고, 그렇지 않으면 표시한다.
+        if (this.isShow) {
+            if (state.isMapOpened) {
+                this.Hide()
+            }
+        }
+        else {
+            if (!state.isMapOpened) {
+                this.Show()
+            }
+        }
+    }
+
+    ; GUI 재구성이 필요한지 판단하기 위한 상태 스냅샷 문자열 생성
+    static _BuildSnapshot(state) {
+        parts := [state.isRouteActive, state.finalDestination, state.starSystem, Round(state.currentFuelPct)]
+        for item in state.navRoute
+            parts.Push(item.starSystem . "|" . item.jumpDistance . "|" . item.starClass)
+        return this._JoinArray(parts, "`n")
+    }
+
+    static _JoinArray(arr, delim) {
+        result := ""
+        for index, value in arr
+            result .= (index == 1 ? "" : delim) . value
+        return result
+    }
+
+    static _UpdateRoute(state) {
         this.finalDestination := state.finalDestination != "" ? state.finalDestination : "Unknown"
 
         visibleRoute := state.navRoute
@@ -153,11 +189,9 @@ class NavRouteOverlayGui {
             this.rowCtrls[idx].distance.Visible := false
         }
 
-        if (state.isOverlayVisible) {
+        WinRedraw(this.textGui.Hwnd)
+        if (!state.isMapOpened) {
             this.Show()
-            WinRedraw(this.textGui.Hwnd)
-        } else {
-            this.Hide()
         }
     }
 

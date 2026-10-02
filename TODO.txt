@@ -1,0 +1,78 @@
+
+
+# TODO
+- Power 세력이 없으면 팩션세력 출력 --- 0
+- 일반 Conflict Zone 진입시 어떻게 처리할 것인가 ?
+- 화면 표시 옵션 제작
+- 커뮤니티 골 참여 상태 표시 여부
+
+
+
+
+< 저널 파일 중요 로그 >
+
+// Power CZ 진입
+{ "timestamp":"2026-09-30T14:15:04Z", "event":"SupercruiseDestinationDrop", "Type":"$Warzone_Powerplay_Med:#index=1;", "Type_Localised":"Power Conflict Zone [Medium Intensity]", "Threat":0 }
+
+// 공격 당함
+{ "timestamp":"2026-09-30T14:15:42Z", "event":"UnderAttack", "Target":"You" }
+
+// 메인메뉴로 이동
+{ "timestamp":"2026-10-02T06:09:32Z", "event":"Music", "MusicTrack":"MainMenu" }
+
+// 타겟팅
+{ "timestamp":"2026-09-30T14:16:10Z", "event":"ShipTargeted", "TargetLocked":true, "Ship":"viper_mkiv", "Ship_Localised":"Viper Mk IV", "ScanStage":0 }
+{ "timestamp":"2026-09-30T14:16:10Z", "event":"ShipTargeted", "TargetLocked":true, "Ship":"viper_mkiv", "Ship_Localised":"Viper Mk IV", "ScanStage":3, "PilotName":"$npc_name_decorate:#name=Stephen Griggs;", "PilotName_Localised":"Stephen Griggs", "PilotRank":"Competent", "ShieldHealth":65.541290, "HullHealth":100.000000, "Faction":"Jerome Archer", "LegalStatus":"Enemy", "Power":"Jerome Archer" }
+
+// 메시지 받음
+{ "timestamp":"2026-09-30T14:18:01Z", "event":"ReceiveText", "From":"$npc_name_decorate:#name=Stephen Griggs;", "From_Localised":"Stephen Griggs", "Message":"$Military_UnderFire08;", "Message_Localised":"Enemy fire incoming!", "Channel":"npc" }
+
+// 파워 CZ 에서 적 처치
+{ "timestamp":"2026-09-30T14:19:01Z", "event":"FactionKillBond", "Reward":23018, "AwardingFaction":"Denton Patreus", "VictimFaction":"Jerome Archer" }
+{ "timestamp":"2026-09-30T14:19:01Z", "event":"ShipTargeted", "TargetLocked":false }
+{ "timestamp":"2026-09-30T14:19:03Z", "event":"PowerplayMerits", "Power":"Denton Patreus", "MeritsGained":326, "TotalMerits":18553753 }
+
+// 점프시작
+{ "timestamp":"2026-09-30T14:19:55Z", "event":"StartJump", "JumpType":"Supercruise", "Taxi":false }
+{ "timestamp":"2026-09-30T14:20:00Z", "event":"ReceiveText", "From":"$npc_name_decorate:#name=Legaussa;", "From_Localised":"Legaussa", "Message":"$Military_Passthrough07;", "Message_Localised":"No need to worry, the navy is here.", "Channel":"npc" }
+{ "timestamp":"2026-09-30T14:20:00Z", "event":"SupercruiseEntry", "Taxi":false, "Multicrew":false, "StarSystem":"Skoll", "SystemAddress":18263140345313 }
+
+// 성계 도착
+{ "timestamp":"2026-10-01T13:04:47Z", "event":"Location", "DistFromStarLS":478.674315, "Docked":true, "StationName":"BZT-2TW", "StationType":"FleetCarrier", "MarketID":3701841408, "StationFaction":{ "Name":"FleetCarrier" }, "StationGovernment":"$government_Carrier;", "StationGovernment_Localised":"Private Ownership", "StationServices":[ "dock", "autodock", "commodities", "contacts", "exploration", "outfitting", "crewlounge", "rearm", "refuel", "repair", "shipyard", "engineer", "flightcontroller", "stationoperations", "stationMenu", "carriermanagement", "carrierfuel", "livery", "voucherredemption", "socialspace" ], "StationEconomy":"$economy_Carrier;", "StationEconomy_Localised":"Private Enterprise", "StationEconomies":[ { "Name":"$economy_Carrier;", "Name_Localised":"Private Enterprise", "Proportion":1.000000 } ], "Taxi":false, "Multicrew":false, "StarSystem":"HIP 88648", "SystemAddress":10477357435, "StarPos":[13.56250,-26.56250,185.50000], "SystemAllegiance":"Independent", "SystemEconomy":"$economy_Refinery;", "SystemEconomy_Localised":"Refinery", "SystemSecondEconomy":"$economy_Agri;", "SystemSecondEconomy_Localised":"Agriculture", "SystemGovernment":"$government_Corporate;", "SystemGovernment_Localised":"Corporate", "SystemSecurity":"$SYSTEM_SECURITY_medium;", "SystemSecurity_Localised":"Medium Security", "Population":333610299, "Body":"HIP 88648 1", "BodyID":1, "BodyType":"Planet", "ControllingPower":"Denton Patreus", "Powers":[ "Denton Patreus", "Yuri Grom", "Zemina Torval" ], "PowerplayState":"Stronghold", "PowerplayStateControlProgress":0.253519, "PowerplayStateReinforcement":35, "PowerplayStateUndermining":916, "Factions":[ { "Name":"Nahuaru Crimson Bridge Int", "FactionState":"Expansion", "Government":"Corporate", "Influence":0.627723, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":100.000000, "ActiveStates":[ { "State":"Boom" }, { "State":"Expansion" } ] }, { "Name":"SONS OF SEDDON", "FactionState":"None", "Government":"Democracy", "Influence":0.254455, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":16.000000 }, { "Name":"Communist Interstellar Union", "FactionState":"None", "Government":"Communism", "Influence":0.117822, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":100.000000, "PendingStates":[ { "State":"Expansion", "Trend":0 } ] } ], "SystemFaction":{ "Name":"Nahuaru Crimson Bridge Int", "FactionState":"Expansion" } }
+
+// 도킹
+{ "timestamp":"2026-10-02T06:50:07Z", "event":"DockingGranted", "LandingPad":2, "MarketID":129051597, "StationName":"Sword of Iustitia", "StationType":"MegaShip" }
+{ "timestamp":"2026-10-02T06:50:09Z", "event":"Music", "MusicTrack":"DockingComputer" }
+{ "timestamp":"2026-10-02T06:50:35Z", "event":"Docked", "StationName":"Sword of Iustitia", "StationType":"MegaShip", "Taxi":false, "Multicrew":false, "StarSystem":"Redonesses", "SystemAddress":3107442528962, "MarketID":129051597, "StationFaction":{ "Name":"Redonesses Defence Party", "FactionState":"War" }, "StationGovernment":"$government_Dictatorship;", "StationGovernment_Localised":"Dictatorship", "StationServices":[ "dock", "autodock", "contacts", "exploration", "missions", "outfitting", "crewlounge", "rearm", "refuel", "repair", "shipyard", "engineer", "facilitator", "flightcontroller", "stationoperations", "searchrescue", "stationMenu", "livery" ], "StationEconomy":"$economy_Military;", "StationEconomy_Localised":"Military", "StationEconomies":[ { "Name":"$economy_Military;", "Name_Localised":"Military", "Proportion":1.000000 } ], "DistFromStarLS":205.833010, "LandingPads":{ "Small":4, "Medium":2, "Large":1 } }
+
+// 캐리어 점프로 성계 도착
+"event":"CarrierLocation", "CarrierType":"FleetCarrier", "CarrierID":3701841408, "StarSystem":"Skoll", "SystemAddress":18263140345313, "BodyID":24 }
+
+// 캐리어 점프
+{ "timestamp":"2026-10-01T13:23:12Z", "event":"CarrierJump", "Docked":true, "StationName":"BZT-2TW", "StationType":"FleetCarrier", "MarketID":3701841408, "StationFaction":{ "Name":"FleetCarrier" }, "StationGovernment":"$government_Carrier;", "StationGovernment_Localised":"Private Ownership", "StationServices":[ "dock", "autodock", "commodities", "contacts", "exploration", "outfitting", "crewlounge", "rearm", "refuel", "repair", "shipyard", "engineer", "flightcontroller", "stationoperations", "stationMenu", "carriermanagement", "carrierfuel", "livery", "voucherredemption", "socialspace" ], "StationEconomy":"$economy_Carrier;", "StationEconomy_Localised":"Private Enterprise", "StationEconomies":[ { "Name":"$economy_Carrier;", "Name_Localised":"Private Enterprise", "Proportion":1.000000 } ], "Taxi":false, "Multicrew":false, "StarSystem":"Skoll", "SystemAddress":18263140345313, "StarPos":[14.12500,-49.78125,143.43750], "SystemAllegiance":"Empire", "SystemEconomy":"$economy_Agri;", "SystemEconomy_Localised":"Agriculture", "SystemSecondEconomy":"$economy_Colony;", "SystemSecondEconomy_Localised":"Colony", "SystemGovernment":"$government_Patronage;", "SystemGovernment_Localised":"Patronage", "SystemSecurity":"$SYSTEM_SECURITY_low;", "SystemSecurity_Localised":"Low Security", "Population":6420, "Body":"Skoll AB 5", "BodyID":24, "BodyType":"Planet", "ControllingPower":"Jerome Archer", "Powers":[ "Denton Patreus", "Yuri Grom", "Zemina Torval", "Jerome Archer" ], "PowerplayState":"Exploited", "PowerplayStateControlProgress":0.537547, "PowerplayStateReinforcement":2467, "PowerplayStateUndermining":8925, "Factions":[ { "Name":"HIP 96854 Empire League", "FactionState":"None", "Government":"Patronage", "Influence":0.178788, "Allegiance":"Empire", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":100.000000, "RecoveringStates":[ { "State":"Drought", "Trend":0 } ] }, { "Name":"Confederation of Skoll", "FactionState":"Election", "Government":"Confederacy", "Influence":0.096970, "Allegiance":"Federation", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":100.000000, "ActiveStates":[ { "State":"InfrastructureFailure" }, { "State":"CivilUnrest" }, { "State":"Election" } ] }, { "Name":"Labour Union of Ahayan", "FactionState":"None", "Government":"Communism", "Influence":0.192929, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":100.000000 }, { "Name":"Skoll Crimson Society", "FactionState":"None", "Government":"Anarchy", "Influence":0.010101, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":0.000000 }, { "Name":"Colonia Travel Agency", "FactionState":"Election", "Government":"Cooperative", "Influence":0.128283, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":100.000000, "ActiveStates":[ { "State":"Election" } ] }, { "Name":"Galaxy Connect Enterprise", "FactionState":"None", "Government":"Corporate", "Influence":0.113131, "Allegiance":"Independent", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":100.000000 }, { "Name":"The Dark Armada", "FactionState":"None", "Government":"Patronage", "Influence":0.279798, "Allegiance":"Empire", "Happiness":"$Faction_HappinessBand2;", "Happiness_Localised":"Happy", "MyReputation":100.000000, "RecoveringStates":[ { "State":"PublicHoliday", "Trend":0 }, { "State":"Expansion", "Trend":0 } ] } ], "SystemFaction":{ "Name":"The Dark Armada" }, "Conflicts":[ { "WarType":"election", "Status":"active", "Faction1":{ "Name":"Confederation of Skoll", "Stake":"Wnuk-Lipinski's Folly", "WonDays":0 }, "Faction2":{ "Name":"Colonia Travel Agency", "Stake":"Rusch Base", "WonDays":0 } } ] }
+
+// 커뮤니티 골
+{ "timestamp":"2026-10-02T06:29:38Z", "event":"CommunityGoal", "CurrentGoals":[ { "CGID":860, "Title":"Defeat Criminal Pilots in Redonesses", "SystemName":"Redonesses", "MarketName":"Sword of Iustitia", "Expiry":"2026-10-08T10:00:00Z", "IsComplete":false, "CurrentTotal":7092712108, "PlayerContribution":0, "NumContributors":1781, "TopTier":{ "Name":"Tier 5", "Bonus":"" }, "TopRankSize":10, "PlayerInTopRank":false, "PlayerPercentileBand":100 } ] }
+
+{ "timestamp":"2026-10-02T06:32:07Z", "event":"CommunityGoal", "CurrentGoals":[ { "CGID":860, "Title":"Defeat Criminal Pilots in Redonesses", "SystemName":"Redonesses", "MarketName":"Sword of Iustitia", "Expiry":"2026-10-08T10:00:00Z", "IsComplete":false, "CurrentTotal":7097702617, "PlayerContribution":0, "NumContributors":1783, "TopTier":{ "Name":"Tier 5", "Bonus":"" }, "TopRankSize":10, "PlayerInTopRank":false, "PlayerPercentileBand":100 } ] }
+
+// 일반 Conflict Zone 진입
+{ "timestamp":"2026-10-02T06:31:58Z", "event":"SupercruiseDestinationDrop", "Type":"$Warzone_PointRace_Med:#index=3;", "Type_Localised":"Conflict Zone [Medium Intensity]", "Threat":0 }
+{ "timestamp":"2026-10-02T06:32:01Z", "event":"SupercruiseExit", "Taxi":false, "Multicrew":false, "StarSystem":"Redonesses", "SystemAddress":3107442528962, "Body":"Redonesses A 1", "BodyID":7, "BodyType":"Planet" }
+
+// 일반 Conflict Zone 적함선 킬
+{ "timestamp":"2026-10-02T06:36:06Z", "event":"FactionKillBond", "Reward":40457, "AwardingFaction":"Redonesses Defence Party", "VictimFaction":"Clan of Redonesses" }
+{ "timestamp":"2026-10-02T06:37:33Z", "event":"FactionKillBond", "Reward":47473, "AwardingFaction":"Redonesses Defence Party", "VictimFaction":"Clan of Redonesses" }
+
+// 커뮤니티 골
+{ "timestamp":"2026-10-02T06:42:09Z", "event":"CommunityGoal", "CurrentGoals":[ { "CGID":860, "Title":"Defeat Criminal Pilots in Redonesses", "SystemName":"Redonesses", "MarketName":"Sword of Iustitia", "Expiry":"2026-10-08T10:00:00Z", "IsComplete":false, "CurrentTotal":7133117657, "PlayerContribution":0, "NumContributors":1789, "TopTier":{ "Name":"Tier 5", "Bonus":"" }, "TopRankSize":10, "PlayerInTopRank":false, "PlayerPercentileBand":100 } ] }
+
+// 바우처 정산
+{ "timestamp":"2026-10-02T06:52:20Z", "event":"RedeemVoucher", "Type":"CombatBond", "Amount":20752811, "Faction":"PilotsFederation" }
+{ "timestamp":"2026-10-02T06:52:23Z", "event":"RedeemVoucher", "Type":"CombatBond", "Amount":1632322, "Faction":"Redonesses Defence Party" }
+{ "timestamp":"2026-10-02T06:52:24Z", "event":"ReceiveText", "From":"$ShipName_Military_Independent;", "From_Localised":"System Defence Force", "Message":"$Military_Passthrough02;", "Message_Localised":"System sweep initiated.", "Channel":"npc" }
+{ "timestamp":"2026-10-02T06:52:31Z", "event":"RedeemVoucher", "Type":"CombatBond", "Amount":8351545, "Faction":"Denton Patreus", "BrokerPercentage":25.000000 }
+{ "timestamp":"2026-10-02T06:53:00Z", "event":"ReceiveText", "From":"$ShipName_Military_Independent;", "From_Localised":"System Defence Force", "Message":"$Military_Passthrough02;", "Message_Localised":"System sweep initiated.", "Channel":"npc" }
+
+// 커뮤니티 골
+{ "timestamp":"2026-10-02T06:56:14Z", "event":"CommunityGoal", "CurrentGoals":[ { "CGID":860, "Title":"Defeat Criminal Pilots in Redonesses", "SystemName":"Redonesses", "MarketName":"Sword of Iustitia", "Expiry":"2026-10-08T10:00:00Z", "IsComplete":false, "CurrentTotal":7180224442, "PlayerContribution":1632322, "NumContributors":1800, "TopTier":{ "Name":"Tier 5", "Bonus":"" }, "TopRankSize":10, "PlayerInTopRank":false, "PlayerPercentileBand":75 } ] }

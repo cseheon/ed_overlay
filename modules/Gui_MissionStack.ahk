@@ -12,6 +12,7 @@ class MissionStackOverlayGui {
     static posX := 0, posY := 0, guiW := 320, guiH := 0
 
     static _latTotalStr := ""
+    static _lastSnapshot := ""
 
     static Init(px := 0, py := 0, w := 320) {
         this.guiW := w
@@ -52,6 +53,42 @@ class MissionStackOverlayGui {
             this.Hide()
             return
         }
+        
+        snapshot := this._BuildSnapshot(state)
+        if (snapshot != this._lastSnapshot) {
+            this._lastSnapshot := snapshot
+            this._UpdateMission(state)
+        }
+
+        ; 갤럭시 맵 또는 시스템 맵이 열려 있는 경우 GUI를 숨기고, 그렇지 않으면 표시한다.
+        if (this.isShow) {
+            if (state.isMapOpened) {
+                this.Hide()
+            }
+        }
+        else {
+            if (!state.isMapOpened) {
+                this.Show()
+            }
+        }
+    }
+
+    ; GUI 재구성이 필요한지 판단하기 위한 상태 스냅샷 문자열 생성
+    static _BuildSnapshot(state) {
+        parts := [state.isMissionStackActive, state.missionStack.Count]
+        for faction, data in state.missionStack
+            parts.Push(faction . "|" . data.killsLeft)
+        return this._JoinArray(parts, "`n")
+    }
+
+    static _JoinArray(arr, delim) {
+        result := ""
+        for index, value in arr
+            result .= (index == 1 ? "" : delim) . value
+        return result
+    }
+
+    static _UpdateMission(state) {
 
         ; 1. 스택 데이터를 배열로 추출 및 내림차순 정렬 (남은 처치 수 기준)
         stackList := []
@@ -151,9 +188,9 @@ class MissionStackOverlayGui {
             this.itemCtrls[idx].kills.Visible := false
         }
 
-        if (state.isOverlayVisible) {
+        WinRedraw(this.textGui.Hwnd)
+        if (!state.isMapOpened) {
             this.Show()
-            WinRedraw(this.textGui.Hwnd)
         }
     }
 

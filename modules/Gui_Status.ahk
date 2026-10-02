@@ -18,21 +18,23 @@ class StatusOverlayGui {
     static _lastStates := Map()
     static _definitions := [
         { label: "STSTEM", key: "starSystem", value: "Unknown", align: "left", visible:true }, 
-        { label: "SYSTEM POWER", key: "systemPower", value: "None", align: "left", visible:true }, 
-        { label: "POWER STATE", key: "systemPowerState", value: "Unoccupied", align: "left", visible:true }, 
+        { label: "POPULATION", key: "systemPopulation", value: 0, align: "left", visible: true },
+        { label: "SECURITY", key: "systemSecurity", value: "Unknown", align: "left", visible: true },
+        { label: "SYSTEM POWER", key: "systemPower", value: "Unknown", align: "left", visible:true }, 
+        { label: "POWER STATE", key: "systemPowerState", value: "Unknown", align: "left", visible:true }, 
         { label: "DOCKED", key: "dockedStationName", value: "Unknown", align: "left", visible:true }, 
-        { label: "POWER CONFLICT", key: "powerEnemyFaction", value: "Arissa Lavigny-Duval", align: "left", visible:true }, 
+        { label: "POWER CONFLICT", key: "powerEnemyFaction", value: "Unknown", align: "left", visible:true }, 
         { label: "TIME", key: "", value: "00:00", align: "center", visible:true }, 
         { label: "KILLS", key: "powerKills", value: 0, align: "center", visible:true }, 
         { label: "CZ MERITS", key: "powerMerits", value: 0, align: "center", visible: true },
         { label: "MERITS", key: "totalMerits", value: 0, align: "right", visible:true }, 
         { label: "CREDITS", key: "totalCredits", value: 0, align: "right", visible:true }]
 
-    static Init(posX, posY, guiW, guiH) {
-        this._posX := posX
+    static Init(posY := 20) {
+        this._posX := 0
         this._posY := posY
-        this._guiW := guiW
-        this._guiH := guiH
+        this._guiW := A_ScreenWidth
+        this._guiH := 38
 
         this._bgGui := Gui("+AlwaysOnTop -Caption +ToolWindow +E0x20", "ED_Status_BG")
         this._bgGui.BackColor := "000000"
@@ -89,6 +91,18 @@ class StatusOverlayGui {
             this._UpdateContentPosition()
             WinRedraw(this._textGui.Hwnd)
         }
+
+        ; 갤럭시 맵 또는 시스템 맵이 열려 있는 경우 GUI를 숨기고, 그렇지 않으면 표시한다.
+        if (this.isShow) {
+            if (state.isMapOpened) {
+                this.Hide()
+            }
+        }
+        else {
+            if (!(state.isMapOpened)) {
+                this.Show()
+            }
+        }
     }
 
     static Show() {
@@ -107,9 +121,16 @@ class StatusOverlayGui {
         if (state.currentState != "PowerCZ")
             return
 
-        state.powerStartTimeMarker := A_NowUTC
-        this._timerActive := true
-        this._lastTickCount := A_TickCount
+        if (this._timerActive) {
+            this._timerActive := false
+        }
+        else {
+            if (state.powerStartTimeMarker == "")
+                state.powerStartTimeMarker := A_NowUTC
+
+            this._timerActive := true
+            this._lastTickCount := A_TickCount
+        }
     }
 
     static ResetPowerCZTimer(state) {
@@ -130,8 +151,13 @@ class StatusOverlayGui {
             return
         }
 
+        ; 타이어 작동중에 함선 무기를 접었을때 타이머를 일시 정지한다.
+        if (this._timerActive && state.isHardpointsDeployed == false) {
+            this._timerActive := false
+        }
+
         ; 아직 타이머가 작동하지 않았을때, 함선무기를 전개하거나 적함선을 파괴하면 타이머를 시작
-        if (this._timerActive == false && (state.isHardpointsDeployed || state.powerKills > 0 || state.powerMerits > 0)) {
+        if (this._timerActive == false && state.isHardpointsDeployed) {
             this.StartPowerCZTimer(state)
         }
 
@@ -175,6 +201,14 @@ class StatusOverlayGui {
                     czVisible := (state.currentState == "PowerCZ")
                     if (item.visible != czVisible) {
                         item.visible := czVisible
+                        item.labelControl.Visible := item.visible
+                        item.valueControl.Visible := item.visible
+                        isChanged := true
+                    }
+                case "SYSTEM POWER", "POWER STATE":
+                    powerVisible := (state.systemPower != "" && state.systemPower != "Unknown")
+                    if (item.visible != powerVisible) {
+                        item.visible := powerVisible
                         item.labelControl.Visible := item.visible
                         item.valueControl.Visible := item.visible
                         isChanged := true
